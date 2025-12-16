@@ -1,0 +1,13 @@
+package domain.adapter;
+
+public class BankAdapter implements PaymentProcessor{
+     private ExternalBank external;
+BankAdapter(ExternalBank external){
+this.external=external;
+}
+    @Override
+    public void pay(double amount) {
+        external.sendMoney(amount);
+        }
+    
+}
