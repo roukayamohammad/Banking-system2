@@ -2,6 +2,8 @@ import domain.composite.AccountComponent;
 import domain.composite.AccountGroup;
 import domain.composite.SingelAccount;
 import domain.entite.Account;
+import domain.factory.AccountFactory;
+import domain.factory.SavingAccountFactory;
 import domain.state.ActiveState;
 import domain.state.SuspendedState;
 
@@ -32,6 +34,12 @@ public class Main {
 
 //Account c1=new
 Account c1=new Account("A1", "U1", 2200, new ActiveState()) {
+
+    @Override
+    public String getType() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getType'");
+    }
     
 };
 System.out.println(c1.getBalance());
@@ -46,11 +54,23 @@ System.out.println(c1.getBalance());
 */
 
 Account Account2=new Account("A2", "U1", 200, new ActiveState()) {
+
+    @Override
+    public String getType() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getType'");
+    }
     
 };
 
 
 Account Account3=new Account("A3", "U1", 200, new ActiveState()) {
+
+    @Override
+    public String getType() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getType'");
+    }
     
 };
 
@@ -65,6 +85,27 @@ node1.add(accountComponent2)
 
 node1.deposit(200);
 System.out.println(node1.getBalance());
+
+
+
+/*
+
+هون تطبيق على ال  factory 
+
+
+
+*/
+
+
+
+AccountFactory factory=new SavingAccountFactory();
+Account acc=factory.creatAccount("A4", "U1", 33, new ActiveState())
+;
+
+System.out.println(acc.getStateName());
+System.out.println(acc.getBalance());
+System.out.println(acc.getType());
+
 
 
 

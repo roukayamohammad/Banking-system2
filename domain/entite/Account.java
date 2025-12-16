@@ -43,4 +43,5 @@ abstract public class Account {
     public String getAccountId() { return accountId; }
     public String getOwnerId() { return ownerId; }
     public double getBalance() { return balance; }
+   public abstract  String getType();
 }
