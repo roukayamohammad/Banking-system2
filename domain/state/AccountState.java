@@ -1,6 +1,6 @@
 package domain.state;
 
-import domain.entite.Account;
+import domain.entities.Account;
 
 public abstract class AccountState {
     protected Account account;

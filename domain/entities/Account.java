@@ -1,14 +1,14 @@
-package domain.entite;
+package domain.entities;
 
 
 import domain.state.AccountState;
 import domain.state.ActiveState;
-import domain.state.SuspendedState;;
+;
 
 public abstract class Account {
     protected String accountId;
     protected String ownerId;
-    public double balance;
+    protected double balance;
     protected AccountState state;
 
     public AccountState getState() {
@@ -74,6 +74,13 @@ public abstract class Account {
         this.balance = balance;
     }
 
+    public void increaseBalance(double amount) {
+        this.balance += amount;
+    }
+
+    public void decreaseBalance(double amount) {
+        this.balance -= amount;
+    }
     @Override
     public String toString() {
         return String.format("Account{id='%s', owner='%s', balance=%.2f, state=%s}",
@@ -85,6 +92,7 @@ public abstract class Account {
                 this.state.getName() + " to " + newState.getName());
         this.state = newState;
     }
+
 }
 
 
@@ -96,12 +104,15 @@ public abstract class Account {
 
     protected AccountState _state;
 
-    public Account(String accountId, String ownerId, double balance) {
+    public Account(String accountId, String ownerId, double balance, AccountState initialState) {
         this.accountId = accountId;
         this.ownerId = ownerId;
         this.balance = balance;
+
+       this._state=initialState;
        this._state.setContext(this);
     }
+
     public void changeState(AccountState newState) {
         this._state = newState;
         this._state.setContext(this);

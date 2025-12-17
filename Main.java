@@ -1,27 +1,17 @@
-import domain.composite.AccountComponent;
-import domain.composite.AccountGroup;
-import domain.composite.SingelAccount;
-import domain.entite.Account;
+//import domain.factory.SavingAccountFactory;
+
+
+import domain.decorator.InsuranceDecorator;
+import domain.decorator.OverdraftProtectionDecorator;
+import domain.entities.Account;
+import domain.entities.Customer;
 import domain.factory.AccountFactory;
-import domain.state.ActiveState;
-import domain.state.ClosedState;
-import domain.state.SuspendedState;
+import domain.model.CheckingAccount;
+import domain.model.LoanAccount;
+import domain.model.SavingsAccount;
 
 public class Main {
     public static void main(String[] args) {
-
-        Account axx = AccountFactory.createAccount("SAVINGS", "2", "all", 20);
-        System.out.println( axx.toString());
-        axx.deposit(100);
-        System.out.println( axx.toString());
-        axx.withdraw(10);
-        System.out.println( axx.toString()+"\n");
-        axx.close();
-        axx.withdraw(110);
-        System.out.println( axx.toString()+"\n");
-        axx.close();
-        System.out.println( axx.toString());
-
 
         //   Account s1 = new SavingsAccount("A1", "U1", 10000);
         //     Account c1 = new CheckingAccount("A2", "U1", 500);
@@ -47,9 +37,7 @@ public class Main {
         // }
 
 //Account c1=new
-//        Account c1 = new Account("A1", "U1", 2200, new ActiveState()) {
-//
-//        };
+//        Account c1 = new Account("A1", "U1", 2200);
 //        System.out.println(c1.getBalance());
 //        c1.deposit(99);
 //        c1.getStateName();
@@ -59,14 +47,26 @@ public class Main {
 /*
 تطبيق لل composit هون تحت 
 
-*/
+*//*
 
-//        Account Account2 = new Account("A2", "U1", 200, new ActiveState()) {
+//        Account Account2 = new Account("A2", "U1", 200) {
+//
+//            @Override
+//            public String getType() {
+//                // TODO Auto-generated method stub
+//                throw new UnsupportedOperationException("Unimplemented method 'getType'");
+//            }
 //
 //        };
+
+
+//        Account Account3 = new Account("A3", "U1", 200) {
 //
-//
-//        Account Account3 = new Account("A3", "U1", 200, new ActiveState()) {
+//            @Override
+//            public String getType() {
+//                // TODO Auto-generated method stub
+//                throw new UnsupportedOperationException("Unimplemented method 'getType'");
+//            }
 //
 //        };
 //
@@ -83,5 +83,25 @@ public class Main {
 //        System.out.println(node1.getBalance());
 
 
+
+*//*
+
+هون تطبيق على ال  factory
+
+
+
+*//*
+
+
+//
+//AccountFactory factory=new SavingAccountFactory();
+//Account acc=factory.creatAccount("A4", "U1", 33, new ActiveState())
+//;
+//
+//System.out.println(acc.getStateName());
+//System.out.println(acc.getBalance());
+//System.out.println(acc.getType());
+
+*/
     }
 }

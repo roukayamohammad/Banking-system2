@@ -1,6 +1,6 @@
 package domain.state;
 
-import domain.entite.Account;
+import domain.entities.Account;
 
 public class ActiveState extends AccountState {
 
@@ -11,11 +11,8 @@ public class ActiveState extends AccountState {
     @Override
     public void deposit(double amount) {
         if (amount > 0) {
-            account.balance += amount;
-            // We need to access balance - we'll fix this
-            // For now, let's assume we have a method to update balance
+            account.increaseBalance(amount);
             System.out.println("Depositing " + amount + " to active account");
-            // In real implementation, update the account balance
         }
 
     }
@@ -23,7 +20,7 @@ public class ActiveState extends AccountState {
     @Override
     public void withdraw(double amount) {
         if (account.getBalance() >= amount) {
-            account.balance -= amount;
+            account.decreaseBalance(amount);
             System.out.println("Withdraw " + amount + " from active account");
         } else {
             throw new RuntimeException("كمية السحب كبيرة ");

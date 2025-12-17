@@ -1,8 +1,7 @@
 package domain.decorator;
 
-import domain.entite.Account;
-
-import java.math.BigDecimal;
+import domain.entities.Account;
+import domain.state.AccountState;
 
 abstract class AccountDecorator extends Account {
 
@@ -10,7 +9,7 @@ abstract class AccountDecorator extends Account {
 
     public AccountDecorator(Account account) {
 
-        super(account.getAccountId(), account.getOwnerId(), account.getBalance());
+        super(account.getAccountId(), account.getOwnerId(), 0);
         this.decoratedAccount = account;
         // نسخ الحالة
         this.setState(account.getState());
@@ -20,13 +19,11 @@ abstract class AccountDecorator extends Account {
     @Override
     public void deposit(double amount) {
         decoratedAccount.deposit(amount);
-        updateBalance();
     }
 
     @Override
     public void withdraw(double amount) {
         decoratedAccount.withdraw(amount);
-        updateBalance();
     }
 
     @Override
@@ -34,9 +31,9 @@ abstract class AccountDecorator extends Account {
         return decoratedAccount.getBalance();
     }
 
-    protected void updateBalance() {
-        // Update local balance reference
-        this.balance = decoratedAccount.getBalance();
+    @Override
+    public AccountState getState() {
+        return decoratedAccount.getState();
     }
 
     public abstract String getFeatures();

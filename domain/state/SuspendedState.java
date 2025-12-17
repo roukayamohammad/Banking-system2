@@ -1,6 +1,6 @@
 package domain.state;
 
-import domain.entite.Account;
+import domain.entities.Account;
 
 public class SuspendedState extends AccountState {
 

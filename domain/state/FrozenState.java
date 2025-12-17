@@ -1,7 +1,7 @@
 package domain.state;
 
 
-import domain.entite.Account;
+import domain.entities.Account;
 
 public class FrozenState extends AccountState {
 

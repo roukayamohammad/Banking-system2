@@ -1,6 +1,6 @@
 package domain.composite;
 
-import domain.entite.Account;
+import domain.entities.Account;
 
 public class SingelAccount extends AccountComponent  {
     Account account;

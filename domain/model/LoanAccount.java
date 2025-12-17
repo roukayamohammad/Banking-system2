@@ -1,6 +1,6 @@
 package domain.model;
 
-import domain.entite.Account;
+import domain.entities.Account;
 
 public class LoanAccount extends Account {
     private double loanInterestRate;

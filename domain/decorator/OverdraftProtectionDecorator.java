@@ -1,10 +1,10 @@
 package domain.decorator;
 
-import domain.entite.Account;
+import domain.entities.Account;
 
 public class OverdraftProtectionDecorator extends AccountDecorator {
     private double overdraftLimit;
-    private double usedOverdraft;
+    private double usedOverdraft; //تتبع الاستخدام
 
     public OverdraftProtectionDecorator(Account account, double overdraftLimit) {
         super(account);
@@ -19,27 +19,24 @@ public class OverdraftProtectionDecorator extends AccountDecorator {
 
     @Override
     public void withdraw(double amount) {
-        double availableBalance = decoratedAccount.getBalance() +
-                (overdraftLimit - usedOverdraft);
 
-        if (amount <= availableBalance) {
+        double available = decoratedAccount.getBalance()
+                + (overdraftLimit - usedOverdraft);
+
+        if (amount <= available) {
             if (amount <= decoratedAccount.getBalance()) {
-                // Use regular balance
                 decoratedAccount.withdraw(amount);
             } else {
-                // Use overdraft
                 double overdraftNeeded = amount - decoratedAccount.getBalance();
-                decoratedAccount.withdraw(decoratedAccount.getBalance()); // Empty regular balance
+                decoratedAccount.withdraw(decoratedAccount.getBalance());
                 usedOverdraft += overdraftNeeded;
-                System.out.println("Using overdraft: $" + overdraftNeeded +
-                        " | Total overdraft used: $" + usedOverdraft);
+                System.out.println("Using overdraft: $" + overdraftNeeded);
             }
-            updateBalance();
         } else {
-            System.out.println("Withdrawal denied: Exceeds available balance and overdraft limit");
+            throw new RuntimeException("Exceeds overdraft limit");
         }
     }
-
+//سداد السحب
     public void repayOverdraft(double amount) {
         if (amount > 0 && amount <= usedOverdraft) {
             usedOverdraft -= amount;

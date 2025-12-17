@@ -1,16 +1,17 @@
 // test/StatePatternDemo.java
-package test;
+package domain.test;
 
-import domain.entite.Account;
+import domain.entities.Account;
+import domain.factory.AccountFactory;
 import domain.model.*;
-import domain.state.*;
 
 public class StatePatternDemo {
     public static void main(String[] args) {
         System.out.println("=== تجربة State Pattern ===\n");
 
         // 1. إنشاء حساب جديد (حالة نشطة افتراضياً)
-        Account account = new SavingsAccount("ACC001", "Ahmed", 1000);
+        Account account = AccountFactory.createAccount("SAVINGS", "ACC001", "Ahmed", 1000);
+
         System.out.println("1. الحساب بعد الإنشاء:");
         System.out.println(account);
 
@@ -43,14 +44,18 @@ public class StatePatternDemo {
         account.withdraw(50);
 
         // 8. إغلاق الحساب (يتطلب رصيد صفر)
-        System.out.println("\n8. محاولة إغلاق الحساب:");
+        System.out.println("\n8. محاولة إغلاق حساب معلق:");
         account.close();
         System.out.println(account);
 
-        // 9. سحب كل الأموال ثم الإغلاق
-        System.out.println("\n9. سحب كل الأموال ثم الإغلاق:");
         // نعود للحالة النشطة أولاً
         Account account2 = new CheckingAccount("ACC002", "Mohamed", 500);
+
+        System.out.println("\n9. محاولة اغلاق حساب نشط:");
+        account2.close();
+
+        // 9. سحب كل الأموال ثم الإغلاق
+        System.out.println("\n9. سحب كل الأموال ثم الإغلاق:");
         account2.withdraw(500);
         account2.close();
         System.out.println(account2.toString());

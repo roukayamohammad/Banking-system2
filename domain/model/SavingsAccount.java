@@ -1,6 +1,6 @@
 package domain.model;
 
-import domain.entite.Account;
+import domain.entities.Account;
 
 public class SavingsAccount extends Account {
 
@@ -14,14 +14,7 @@ public class SavingsAccount extends Account {
         if (interestRate < 0 || interestRate > 0.1) { // تأكد من قيمة معقولة
             throw new IllegalArgumentException("Interest rate must be between 0 and 10%");
         }
-        this.interestRate = interestRate;
-    }
-
-    public void applyInterest() {
-        double interest = balance * interestRate;
-        balance += interest;
-        System.out.printf("Applied interest: $%.2f (Rate: %.2f%%)%n",
-                interest, interestRate * 100);
+        this.interestRate = 0.02;
     }
 
     public double getInterestRate() {
@@ -29,6 +22,9 @@ public class SavingsAccount extends Account {
     }
 
     public void setInterestRate(double interestRate) {
+        if (interestRate < 0 || interestRate > 0.1) { // تأكد من قيمة معقولة
+            throw new IllegalArgumentException("Interest rate must be between 0 and 10%");
+        }
         this.interestRate = interestRate;
     }
 
