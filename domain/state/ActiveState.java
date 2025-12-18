@@ -23,7 +23,8 @@ public class ActiveState extends AccountState {
             account.decreaseBalance(amount);
             System.out.println("Withdraw " + amount + " from active account");
         } else {
-            throw new RuntimeException("كمية السحب كبيرة ");
+            System.out.println("كمية السحب كبيرة ");
+//            throw new RuntimeException("كمية السحب كبيرة ");
         }
     }
 
