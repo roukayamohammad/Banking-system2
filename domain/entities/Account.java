@@ -3,13 +3,14 @@ package domain.entities;
 
 import domain.state.AccountState;
 import domain.state.ActiveState;
-;
+import domain.strategy.InterestStrategy;
 
 public abstract class Account {
     protected String accountId;
     protected String ownerId;
     protected double balance;
     protected AccountState state;
+    protected InterestStrategy interestStrategy;
 
     public AccountState getState() {
         return state;
@@ -52,6 +53,7 @@ public abstract class Account {
     public void activate() {
         state.activate();
     }
+
     public String getStateName() {
         return state.getName();
     }
@@ -81,11 +83,13 @@ public abstract class Account {
     public void decreaseBalance(double amount) {
         this.balance -= amount;
     }
+
     @Override
     public String toString() {
         return String.format("Account{id='%s', owner='%s', balance=%.2f, state=%s}",
                 accountId, ownerId, balance, getStateName());
     }
+
     // مهم: هذه الدالة تسمح للحالات بتغيير حالة الحساب
     public void changeState(AccountState newState) {
         System.out.println("Changing account " + accountId + " state from " +
@@ -93,45 +97,31 @@ public abstract class Account {
         this.state = newState;
     }
 
+
+    /**
+     * تعيين استراتيجية الفائدة (Runtime)
+     */
+    public void setInterestStrategy(InterestStrategy interestStrategy) {
+        this.interestStrategy = interestStrategy;
+    }
+
+    /**
+     * تطبيق الفائدة باستخدام Strategy
+     */
+
+    public void applyInterest() {
+        if (interestStrategy == null)
+            throw new IllegalStateException("Interest strategy not set");
+
+        double interest = interestStrategy.calculateInterest(balance);
+        balance += interest;
+
+        if (interest >= 0) {
+            System.out.printf("Interest gain: $%.2f%n", interest);
+        } else {
+            System.out.printf("Interest loss: $%.2f%n", -interest);
+        }
+    }
+
+
 }
-
-
-/*bstract public class Account {
-
-     String accountId;
-     String ownerId;
-    public double balance;
-
-    protected AccountState _state;
-
-    public Account(String accountId, String ownerId, double balance, AccountState initialState) {
-        this.accountId = accountId;
-        this.ownerId = ownerId;
-        this.balance = balance;
-
-       this._state=initialState;
-       this._state.setContext(this);
-    }
-
-    public void changeState(AccountState newState) {
-        this._state = newState;
-        this._state.setContext(this);
-      
-    }
-
-    public void deposit(double amount) {
-        _state.deposit(amount);
-    }
-
-    public void withdraw(double amount) {
-        _state.withdraw(amount);
-    }
-
-    public String getStateName() {
-        return _state.getName();
-    }
-
-    public String getAccountId() { return accountId; }
-    public String getOwnerId() { return ownerId; }
-    public double getBalance() { return balance; }
-}*/

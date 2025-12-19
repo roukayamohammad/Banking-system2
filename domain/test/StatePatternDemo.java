@@ -61,24 +61,6 @@ public class StatePatternDemo {
         System.out.println(account2.toString());
         System.out.println("الحالة النهائية: " + account2.getStateName());
 
-        // 10. عرض جميع الحالات الممكنة
-//        System.out.println("\n10. مصفوفة التحولات المسموحة:");
-//        displayTransitionMatrix();
     }
 
-//    private static void displayTransitionMatrix() {
-//        String[] states = {"ACTIVE", "FROZEN", "SUSPENDED", "CLOSED", "OVERDRAWN"};
-//
-//        System.out.println("\nمن \\ إلى\t" + String.join("\t", states));
-//        System.out.println("--------------------------------------------------------");
-//
-//        for (int i = 0; i < states.length; i++) {
-//            System.out.print(states[i] + "\t\t");
-//            for (int j = 0; j < states.length; j++) {
-//                String result = StateManager.canTransition(states[i], states[j]) ? "✓" : "✗";
-//                System.out.print(result + "\t");
-//            }
-//            System.out.println();
-//        }
-//    }
 }
