@@ -1,12 +1,16 @@
 package domain.entities;
 
 import domain.observer.Observer;
+import domain.report.AuditService;
+import domain.report.Transaction;
+import domain.report.TransactionLog;
 import domain.state.AccountState;
 import domain.state.ActiveState;
 import domain.strategy.InterestStrategy;
 
 import java.util.ArrayList;
 import java.util.List;
+import domain.chain.*;
 
 public abstract class Account {
     protected String accountId;
@@ -37,7 +41,7 @@ public abstract class Account {
 
     private void notifyObservers(String message) {
         for (Observer observer : observers) {
-        //    observer.update("Account " + accountId + ": " + message);
+            //    observer.update("Account " + accountId + ": " + message);
 
             observer.update(this, message);
         }
@@ -71,17 +75,22 @@ public abstract class Account {
     }
 
 
-
     public void increaseBalance(double amount) {
         this.balance += amount;
+        TransactionLog.log(
+                new Transaction(accountId, "DEPOSIT", amount)
+        );
 
-        notifyObservers("Deposited $" + amount + " | New Balance: $" + balance);
+        notifyObservers("Deposited $" + amount + " | New Balance: $" + getBalance());
     }
 
     public void decreaseBalance(double amount) {
         this.balance -= amount;
+        TransactionLog.log(
+                new Transaction(accountId, "WITHDRAW", amount)
+        );
 
-        notifyObservers("Withdrawn $" + amount + " | New Balance: $" + balance);
+        notifyObservers("Withdrawn $" + amount + " | New Balance: $" + getBalance());
     }
 
 
@@ -89,8 +98,51 @@ public abstract class Account {
         state.deposit(amount);
     }
 
-    public void withdraw(double amount) {
+    /*public void withdraw(double amount) {
         state.withdraw(amount);
+    }*/
+
+
+    public void withdraw(double amount) {
+
+
+        if (amount > balance) {
+            String msg = " Failed Attempt: Insufficient funds for withdrawal of $" + amount;
+            System.out.println(msg);
+            notifyObservers(msg);
+            return;
+        }
+
+
+        TransactionHandler autoSystem = new AutoApprovalHandler();
+        TransactionHandler manager = new ManagerHandler();
+        TransactionHandler director = new DirectorHandler();
+
+        autoSystem.setNextHandler(manager);
+        manager.setNextHandler(director);
+
+
+        TransactionRequest request = new TransactionRequest(this.accountId, amount, "Withdraw");
+
+        System.out.println("\n--- Processing Withdrawal Approval ---");
+
+        boolean isApproved = autoSystem.approve(request);
+
+
+        if (isApproved) {
+            System.out.println(" Chain Approved. Proceeding to Account State...");
+
+
+            state.withdraw(amount);
+
+        } else {
+
+            String rejectionMsg = " Withdrawal Request of $" + amount + " was REJECTED by Bank Administration.";
+
+            System.out.println(rejectionMsg);
+
+            notifyObservers(rejectionMsg);
+        }
     }
 
     public void freeze() {
@@ -132,9 +184,14 @@ public abstract class Account {
 
         }
     }
+
     public void changeState(AccountState newState) {
         String oldStateName = this.state.getName();
         this.state = newState;
+
+        AuditService.log(
+                "Account " + accountId + " state changed from " + oldStateName + " to " + newState.getName()
+        );
 
         System.out.println("State Log: Changing account " + accountId + " from " + oldStateName + " to " + newState.getName());
 

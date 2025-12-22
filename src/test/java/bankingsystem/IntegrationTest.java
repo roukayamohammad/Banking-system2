@@ -5,6 +5,7 @@ import domain.entities.Customer;
 import domain.factory.AccountFactory;
 import domain.decorator.*;
 import domain.composite.*;
+import domain.security.Role;
 import domain.strategy.*;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.Test;
@@ -51,7 +52,7 @@ public class IntegrationTest {
     public void testCustomerWithMultipleAccountsAndPatterns() {
         // إنشاء عميل
         Customer customer = new Customer("CUST001", "أحمد",
-                "ahmed@email.com", "0501234567", "الرياض");
+                "ahmed@email.com", "0501234567","الرياض", Role.CUSTOMER);
 
         // إنشاء حسابات بأنماط مختلفة
         Account savings = AccountFactory.createAccount("SAVINGS", "SAV001", "CUST001", 10000);
