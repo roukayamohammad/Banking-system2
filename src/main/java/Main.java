@@ -308,6 +308,8 @@ import domain.entities.MockDatabase;
 import domain.factory.AccountFactory;
 import domain.observer.NotificationService;
 import domain.observer.RealEmailObserver;
+import domain.report.ReportExporter;
+import domain.report.ReportService;
 
 import java.util.Scanner;
 
@@ -345,7 +347,7 @@ public class Main {
             if (myAccount != null) {
                 Customer owner = MockDatabase.getCustomerById(myAccount.getOwnerId());
                 System.out.println(" Current User: " + (owner != null ? owner.getName() : "Unknown"));
-                System.out.println(" Account ID: " + myAccount.getAccountId() + " | Type: " + myAccount.getStateName());
+                System.out.println(" Account ID: " + myAccount.getAccountId() + " | Account State: " + myAccount.getStateName()+ " | Account Type: "  + myAccount.getClass().getSimpleName());
                 System.out.println(" Balance: $" + myAccount.getBalance());
                 System.out.println("-----------------------------------------");
             }
@@ -354,10 +356,11 @@ public class Main {
             System.out.println("2.   Deposit Money");
             System.out.println("3.   Withdraw Money");
             System.out.println("4.   Show Full Details");
-            System.out.println("5.   Freeze/Unfreeze Account");
+            System.out.println("5.   Change State Account");
             System.out.println("6.   Add Insurance / Overdraft");
             System.out.println("7.   Manage Family Group (Composite)");
             System.out.println("8.   External Transfer (Adapter)");
+            System.out.println("9.   Generate Reports");
             System.out.println("0.   Exit");
             System.out.print(">>> Your Choice: ");
 
@@ -455,16 +458,29 @@ public class Main {
                         break;
 
                     case 5:
-                        System.out.println("\n--- State Control ---");
-                        String state = myAccount.getStateName();
-                        if (state.equalsIgnoreCase("ACTIVE")) {
-                            System.out.print("Freeze this account? (1: Yes, 0: No): ");
-                            if (scanner.nextInt() == 1) myAccount.freeze();
-                        } else if (state.equalsIgnoreCase("FROZEN")) {
-                            System.out.print("Unfreeze/Activate this account? (1: Yes, 0: No): ");
-                            if (scanner.nextInt() == 1) myAccount.activate();
-                        } else {
-                            System.out.println("Current state (" + state + ") doesn't allow manual toggle here.");
+                        System.out.println("\n--- Account State Management ---");
+                        System.out.println("Current State: " + myAccount.getStateName());
+                        System.out.println("1. Freeze Account");
+                        System.out.println("2. Suspend Account");
+                        System.out.println("3. Activate Account");
+                        System.out.println("4. Close Account");
+                        System.out.print(">>> Choose action: ");
+                        int stateChoice = scanner.nextInt();
+                        switch (stateChoice) {
+                            case 1:
+                                myAccount.freeze();
+                                break;
+                            case 2:
+                                myAccount.suspend();
+                                break;
+                            case 3:
+                                myAccount.activate();
+                                break;
+                            case 4:
+                                myAccount.close();
+                                break;
+                            default:
+                                System.out.println("Invalid state option.");
                         }
                         break;
 
@@ -505,6 +521,39 @@ public class Main {
                         System.out.println("Processing via Adapter...");
                         adapter.pay(extVal);
                         myAccount.deposit(extVal);
+                        break;
+
+                    case 9:
+                        System.out.println("\n--- REPORT GENERATION ---");
+                        System.out.println("1. Daily Transactions");
+                        System.out.println("2. Account Summary");
+//                        System.out.println("3. Customer Report");
+                        System.out.println("3. Audit Log");
+                        System.out.println("4. Export Daily Transactions");
+                        System.out.print(">>> Select Report Type: ");
+
+                        int reportChoice = scanner.nextInt();
+
+                        switch (reportChoice) {
+                            case 1:
+                                ReportService.dailyTransactions();
+//                                reportGenerator.printDailyTransactions();
+                                break;
+                            case 2:
+//                                reportGenerator.printAccountSummary(myAccount);
+                                ReportService.accountSummary();
+                                break;
+                            case 3:
+//                                reportGenerator.printAuditLog();
+                                ReportService.auditLogs();
+                                break;
+                            case 4:
+                                ReportExporter.exportDailyTransactions("daily_transactions.txt");
+                                break;
+
+                            default:
+                                System.out.println("Invalid report choice.");
+                        }
                         break;
 
                     case 0:

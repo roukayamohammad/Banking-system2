@@ -1,6 +1,7 @@
 package domain.decorator;
 
 import domain.entities.Account;
+import domain.report.AuditService;
 
 public class OverdraftProtectionDecorator extends AccountDecorator {
     private double overdraftLimit;
@@ -10,6 +11,9 @@ public class OverdraftProtectionDecorator extends AccountDecorator {
         super(account);
         this.overdraftLimit = overdraftLimit;
         this.usedOverdraft = 0;
+
+        AuditService.log("Add Overdraft on " + accountId);
+
     }
 
     // Constructor ثانوي مع قيمة افتراضية
@@ -22,6 +26,10 @@ public class OverdraftProtectionDecorator extends AccountDecorator {
         double available = decoratedAccount.getBalance() +
                 (overdraftLimit - usedOverdraft);
 
+        if (!decoratedAccount.getStateName().equals("ACTIVE")) {
+            System.out.printf("❌ Cannot withdraw From %s Account", decoratedAccount.getStateName());
+            return; // لا تتم العملية
+        }
         if (amount <= available && amount > 0) {
             if (amount <= decoratedAccount.getBalance()) {
                 decoratedAccount.withdraw(amount);

@@ -1,6 +1,7 @@
 package domain.decorator;
 
 import domain.entities.Account;
+import domain.report.AuditService;
 
 public class InsuranceDecorator extends AccountDecorator {
 
@@ -15,6 +16,8 @@ public class InsuranceDecorator extends AccountDecorator {
         this.coverageAmount = coverageAmount;
         this.monthlyPremium = monthlyPremium;
         this.isActive = true;
+        AuditService.log("Add Insurance on " + accountId);
+
     }
 // تأمين
     public double getEffectiveBalance() {
