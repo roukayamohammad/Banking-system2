@@ -54,6 +54,9 @@ public void  remove(AccountComponent accountComponent){
 
 
 
+public List<AccountComponent> getChildren() {
+    return children;
+}
 
 
 

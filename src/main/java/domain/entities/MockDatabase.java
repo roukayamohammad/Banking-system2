@@ -37,32 +37,48 @@ public class MockDatabase {
 
 package domain.entities;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
 public class MockDatabase {
 
-
+    // 🔹 تخزين كل الزبائن
     private static final Map<String, Customer> customers = new HashMap<>();
 
-    static {
+    // 🔹 تخزين كل الحسابات في النظام (مهم للـ Composite)
+    private static final List<Account> allAccounts = new ArrayList<>();
 
+
+    static {
         customers.put("1", new Customer("1", "touka", "touka@example.com", "0911111111", "Damascus"));
     }
 
+    // ---------------------- Customers ----------------------
 
     public static void addCustomer(Customer customer) {
         customers.put(customer.getCustomerId(), customer);
         System.out.println(" Database Log: Customer [" + customer.getName() + "] saved successfully.");
     }
 
-
     public static boolean isCustomerExist(String id) {
         return customers.containsKey(id);
     }
 
-
     public static Customer getCustomerById(String customerId) {
         return customers.get(String.valueOf(customerId));
+    }
+
+
+    // ---------------------- Accounts ----------------------
+
+    // 🔹 إضافة حساب جديد إلى القائمة العامة
+    public static void addAccount(Account acc) {
+        allAccounts.add(acc);
+    }
+
+    // 🔹 إرجاع كل الحسابات في النظام
+    public static List<Account> getAllAccounts() {
+        return allAccounts;
     }
 }

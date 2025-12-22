@@ -298,6 +298,8 @@ import java.util.Scanner;
 
 import domain.adapter.BankAdapter;
 import domain.adapter.ExternalBank;
+import domain.adapter.PaymentProcessor;
+import domain.composite.AccountComponent;
 import domain.composite.AccountGroup;
 import domain.composite.SingleAccount;
 import domain.decorator.InsuranceDecorator;
@@ -309,6 +311,7 @@ import domain.factory.AccountFactory;
 import domain.observer.NotificationService;
 import domain.observer.RealEmailObserver;
 
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
@@ -358,6 +361,9 @@ public class Main {
             System.out.println("6.   Add Insurance / Overdraft");
             System.out.println("7.   Manage Family Group (Composite)");
             System.out.println("8.   External Transfer (Adapter)");
+            
+            System.out.println("9.   Switch Active Account\r\n" + //
+                                "");
             System.out.println("0.   Exit");
             System.out.print(">>> Your Choice: ");
 
@@ -417,6 +423,7 @@ public class Main {
 
                         String accId = "ACC-" + (int)(Math.random() * 10000);
                         myAccount = AccountFactory.createAccount(type, accId, custId, 0.0);
+MockDatabase.addAccount(myAccount);
 
 
                         myAccount.addObserver(notificationService);
@@ -483,38 +490,169 @@ public class Main {
                         }
                         break;
 
-                    case 7:
-                        System.out.println("\n--- Family Group (Composite) ---");
-                        if (familyGroup == null) {
-                            familyGroup = new AccountGroup("Family Fund");
-                        }
+               case 7:
+    System.out.println("\n--- Family Group (Composite) ---");
 
-                        familyGroup.add(new SingleAccount(myAccount));
-                        System.out.println(" Current account added to 'Family Fund'.");
-                        System.out.println("Group Total: $" + familyGroup.getBalance());
-                        break;
+    System.out.println("1. Create new group");
+    System.out.println("2. Add current account to group");
+    System.out.println("3. Remove account from group");
+    System.out.println("4. Show group hierarchy");
+    System.out.println("5. Show total balance");
+    
+    System.out.println("6. Deposit to whole group");
+    System.out.println("7. Withdraw from whole group");
+    System.out.print("Select: ");
 
-                    case 8:
-                        System.out.println("\n--- External Bank Transfer ---");
-                        System.out.print("Amount coming from external bank: ");
-                        double extVal = scanner.nextDouble();
+    int g = scanner.nextInt();
 
-                        ExternalBank extBank = new ExternalBank();
-                        BankAdapter adapter = new BankAdapter(extBank);
+    switch (g) {
+        case 1:
+            System.out.print("Enter group name: ");
+            String gname = scanner.next();
+            familyGroup = new AccountGroup(gname);
+            System.out.println("Group created.");
+            break;
 
-                        System.out.println("Processing via Adapter...");
-                        adapter.pay(extVal);
-                        myAccount.deposit(extVal);
-                        break;
+        case 2:
+            if (familyGroup == null) {
+                System.out.println("No group exists. Create one first.");
+                break;
+            }
+            familyGroup.add(new SingleAccount(myAccount));
+            System.out.println("Account added to group.");
+            break;
 
-                    case 0:
-                        System.out.println("Exiting System. Goodbye!");
-                        return;
+     case 3:
+    if (familyGroup == null) {
+        System.out.println("No group exists.");
+        break;
+    }
 
-                    default:
-                        System.out.println("Invalid Option.");
+    List<AccountComponent> list = familyGroup.getChildren();
+
+    if (list.isEmpty()) {
+        System.out.println("Group is empty.");
+        break;
+    }
+
+    System.out.println("\n--- Select account to remove ---");
+    for (int i = 0; i < list.size(); i++) {
+        System.out.println((i + 1) + ". " + list.get(i).getName());
+    }
+
+    System.out.print("Choose: ");
+    int r = scanner.nextInt() - 1;
+
+    if (r >= 0 && r < list.size()) {
+        familyGroup.remove(list.get(r));
+        System.out.println("Account removed from group.");
+    } else {
+        System.out.println("Invalid selection.");
+    }
+    break;
+
+        case 4:
+            if (familyGroup == null) {
+                System.out.println("No group exists.");
+                break;
+            }
+            familyGroup.display(0);
+            break;
+
+        case 5:
+            if (familyGroup == null) {
+                System.out.println("No group exists.");
+                break;
+            }
+            System.out.println("Total Balance: $" + familyGroup.getBalance());
+            break;
+case 6:
+    if (familyGroup == null) {
+        System.out.println("No group exists.");
+        break;
+    }
+    System.out.print("Enter amount to deposit to ALL accounts: ");
+    double dep = scanner.nextDouble();
+    familyGroup.deposit(dep);
+    System.out.println("Deposited $" + dep + " to all accounts in the group.");
+    break;
+case 7:
+    if (familyGroup == null) {
+        System.out.println("No group exists.");
+        break;
+    }
+    System.out.print("Enter amount to withdraw from ALL accounts: ");
+    double w = scanner.nextDouble();
+    familyGroup.withdraw(w);
+    System.out.println("Withdrew $" + w + " from all accounts in the group.");
+    break;
+
+
+    }
+    break;
+case 8:
+    if (myAccount == null) {
+        System.out.println("No active account selected.");
+        break;
+    }
+
+    System.out.print("Enter amount to transfer externally: ");
+    double extAmount = scanner.nextDouble();
+
+    if (extAmount > myAccount.getBalance()) {
+        System.out.println("Insufficient balance for external transfer.");
+        break;
+    }
+
+    // سحب من الحساب الداخلي
+    myAccount.withdraw(extAmount);
+
+    // استدعاء الـ Adapter
+    ExternalBank extBank = new ExternalBank();
+    PaymentProcessor processor = new BankAdapter(extBank);
+
+    processor.pay(extAmount);
+
+    System.out.println("External transfer completed successfully.");
+    break;
+
+case 9:
+    List<Account> all = MockDatabase.getAllAccounts();
+
+    if (all.isEmpty()) {
+        System.out.println("No accounts found in system.");
+        break;
+    }
+
+    System.out.println("\n--- Select Account (Global) ---");
+    for (int i = 0; i < all.size(); i++) {
+        Account a = all.get(i);
+        Customer ownerAcc = MockDatabase.getCustomerById(a.getOwnerId());
+        System.out.println((i + 1) + ". " + a.getAccountId() +
+                           " | Owner: " + ownerAcc.getName() +
+                           " | Balance: $" + a.getBalance());
+    }
+
+    System.out.print("Choose: ");
+    int idx = scanner.nextInt() - 1;
+
+    if (idx >= 0 && idx < all.size()) {
+        myAccount = all.get(idx);
+        System.out.println("Switched to account: " + myAccount.getAccountId());
+    } else {
+        System.out.println("Invalid selection.");
+    }
+    break;
+
                 }
-            } catch (Exception e) {
+                
+            }
+
+
+
+
+
+             catch (Exception e) {
                 System.out.println(" Error: " + e.getMessage());
                 scanner.nextLine();
             }
