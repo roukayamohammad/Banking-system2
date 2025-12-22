@@ -358,6 +358,7 @@ public class Main {
             System.out.println("6.   Add Insurance / Overdraft");
             System.out.println("7.   Manage Family Group (Composite)");
             System.out.println("8.   External Transfer (Adapter)");
+            System.out.println("9.   Apply Interest (Strategy)");
             System.out.println("0.   Exit");
             System.out.print(">>> Your Choice: ");
 
@@ -506,6 +507,17 @@ public class Main {
                         adapter.pay(extVal);
                         myAccount.deposit(extVal);
                         break;
+
+
+
+                    case 9:
+                        System.out.println("\n--- Calculate Interest (Strategy Pattern) ---");
+
+                        myAccount.applyInterest();
+                        System.out.println("New Balance after interest: $" + myAccount.getBalance());
+                        break;
+
+
 
                     case 0:
                         System.out.println("Exiting System. Goodbye!");

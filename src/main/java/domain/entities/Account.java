@@ -7,6 +7,7 @@ import domain.strategy.InterestStrategy;
 
 import java.util.ArrayList;
 import java.util.List;
+import domain.chain.*;
 
 public abstract class Account {
     protected String accountId;
@@ -89,8 +90,51 @@ public abstract class Account {
         state.deposit(amount);
     }
 
-    public void withdraw(double amount) {
+    /*public void withdraw(double amount) {
         state.withdraw(amount);
+    }*/
+
+
+    public void withdraw(double amount) {
+
+
+        if (amount > balance) {
+            String msg = " Failed Attempt: Insufficient funds for withdrawal of $" + amount;
+            System.out.println(msg);
+            notifyObservers(msg);
+            return;
+        }
+
+
+        TransactionHandler autoSystem = new AutoApprovalHandler();
+        TransactionHandler manager = new ManagerHandler();
+        TransactionHandler director = new DirectorHandler();
+
+        autoSystem.setNextHandler(manager);
+        manager.setNextHandler(director);
+
+
+        TransactionRequest request = new TransactionRequest(this.accountId, amount, "Withdraw");
+
+        System.out.println("\n--- Processing Withdrawal Approval ---");
+
+        boolean isApproved = autoSystem.approve(request);
+
+
+        if (isApproved) {
+            System.out.println(" Chain Approved. Proceeding to Account State...");
+
+
+            state.withdraw(amount);
+
+        } else {
+
+            String rejectionMsg = " Withdrawal Request of $" + amount + " was REJECTED by Bank Administration.";
+
+            System.out.println(rejectionMsg);
+
+            notifyObservers(rejectionMsg);
+        }
     }
 
     public void freeze() {
