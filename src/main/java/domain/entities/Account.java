@@ -1,6 +1,9 @@
 package domain.entities;
 
 import domain.observer.Observer;
+import domain.report.AuditService;
+import domain.report.Transaction;
+import domain.report.TransactionLog;
 import domain.state.AccountState;
 import domain.state.ActiveState;
 import domain.strategy.InterestStrategy;
@@ -38,7 +41,7 @@ public abstract class Account {
 
     private void notifyObservers(String message) {
         for (Observer observer : observers) {
-        //    observer.update("Account " + accountId + ": " + message);
+            //    observer.update("Account " + accountId + ": " + message);
 
             observer.update(this, message);
         }
@@ -72,17 +75,22 @@ public abstract class Account {
     }
 
 
-
     public void increaseBalance(double amount) {
         this.balance += amount;
+        TransactionLog.log(
+                new Transaction(accountId, "DEPOSIT", amount)
+        );
 
-        notifyObservers("Deposited $" + amount + " | New Balance: $" + balance);
+        notifyObservers("Deposited $" + amount + " | New Balance: $" + getBalance());
     }
 
     public void decreaseBalance(double amount) {
         this.balance -= amount;
+        TransactionLog.log(
+                new Transaction(accountId, "WITHDRAW", amount)
+        );
 
-        notifyObservers("Withdrawn $" + amount + " | New Balance: $" + balance);
+        notifyObservers("Withdrawn $" + amount + " | New Balance: $" + getBalance());
     }
 
 
@@ -176,9 +184,14 @@ public abstract class Account {
 
         }
     }
+
     public void changeState(AccountState newState) {
         String oldStateName = this.state.getName();
         this.state = newState;
+
+        AuditService.log(
+                "Account " + accountId + " state changed from " + oldStateName + " to " + newState.getName()
+        );
 
         System.out.println("State Log: Changing account " + accountId + " from " + oldStateName + " to " + newState.getName());
 

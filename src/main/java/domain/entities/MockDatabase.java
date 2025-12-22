@@ -37,7 +37,10 @@ public class MockDatabase {
 
 package domain.entities;
 
+
 import domain.security.Role;
+
+import java.util.Collection;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -67,4 +70,9 @@ public class MockDatabase {
     public static Customer getCustomerById(String customerId) {
         return customers.get(String.valueOf(customerId));
     }
+
+    public static Collection<Customer> getAllCustomers() {
+        return customers.values();
+    }
+
 }
