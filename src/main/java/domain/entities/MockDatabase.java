@@ -95,7 +95,16 @@ public class MockDatabase {
        public static Collection<Customer> getAllCustomers() {
         return customers.values();
     }
+    private static final java.util.List<SupportTicket> tickets = new java.util.ArrayList<>();
 
+    public static void addTicket(SupportTicket ticket) {
+        tickets.add(ticket);
+        System.out.println(" Support Ticket Created Successfully!");
+    }
+
+    public static java.util.List<SupportTicket> getAllTickets() {
+        return tickets;
+    }
 }
 
  

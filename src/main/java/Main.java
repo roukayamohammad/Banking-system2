@@ -373,6 +373,7 @@ public class Main {
             System.out.println("9.   Switch Active Account");
             System.out.println("10.  Generate Reports");
             System.out.println("11.  Apply Interest (Strategy)");
+            System.out.println("12.   Customer Support");
             System.out.println("0.   Exit");
             System.out.print(">>> Your Choice: ");
 
@@ -608,6 +609,33 @@ public class Main {
                     case 11 -> {
                         myAccount.applyInterest();
                         System.out.println("New Balance: $" + myAccount.getBalance());
+                    }
+                    // ================= SUPPORT SYSTEM =================
+                    case 12 -> {
+                        System.out.println("\n--- 🎫 Customer Support Center ---");
+                        System.out.println("1. Submit a Complaint/Query");
+                        System.out.println("2. View All Tickets (Admin/Manager Only)");
+                        System.out.print(">>> Select: ");
+                        int sup = scanner.nextInt();
+
+                        if (sup == 1) {
+                            System.out.print("Describe your issue: ");
+                            scanner.nextLine();
+                            String issue = scanner.nextLine();
+
+
+                            MockDatabase.addTicket(new domain.entities.SupportTicket(
+                                    currentUser.getCustomerId(), issue
+                            ));
+                        } else if (sup == 2) {
+
+                            AuthorizationService.checkPermission(currentUser, Permission.MANAGE_USERS);
+
+                            System.out.println("\n📋 --- All Support Tickets ---");
+                            var tickets = MockDatabase.getAllTickets();
+                            if(tickets.isEmpty()) System.out.println("No tickets found.");
+                            else tickets.forEach(System.out::println);
+                        }
                     }
 
                     case 0 -> {
