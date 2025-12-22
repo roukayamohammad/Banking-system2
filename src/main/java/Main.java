@@ -350,13 +350,14 @@ public class Main {
             System.out.println("=========================================");
 
             Customer currentUser = null;
-
             if (myAccount != null) {
-                Customer owner = MockDatabase.getCustomerById(myAccount.getOwnerId());
-                System.out.println(" Current User: " + owner.getName() + " | Role: " + owner.getRole());
-                System.out.println(" Account ID: " + myAccount.getAccountId() +
-                        " | State: " + myAccount.getStateName() +
-                        " | Type: " + myAccount.getClass().getSimpleName());
+
+                currentUser = MockDatabase.getCustomerById(myAccount.getOwnerId());
+
+                System.out.println(" Current User: " + (currentUser != null ? currentUser.getName() : "Unknown")+
+                        " | Role: " + (currentUser != null ? currentUser.getRole() : "None"));
+                System.out.println(" Account ID: " + myAccount.getAccountId() + " | Account State: " + myAccount.getStateName()+ " | Account Type: "  + myAccount.getClass().getSimpleName());
+
                 System.out.println(" Balance: $" + myAccount.getBalance());
                 System.out.println("-----------------------------------------");
             }
