@@ -363,8 +363,6 @@ public class Main {
             System.out.println("3.   Withdraw Money");
             System.out.println("4.   Show Full Details");
             System.out.println("5.   Change State Account");
-
-
             System.out.println("6.   Add Insurance / Overdraft");
             System.out.println("7.   Manage Family Group (Composite)");
             System.out.println("8.   External Transfer (Adapter)");
@@ -553,6 +551,9 @@ public class Main {
 
 
                     case 9 -> {
+                        AuthorizationService.checkPermission(
+                                currentUser, Permission.VIEW_REPORTS
+                        );
                         System.out.println("\n--- REPORT GENERATION ---");
                         System.out.println("1. Daily Transactions");
                         System.out.println("2. Account Summary");
