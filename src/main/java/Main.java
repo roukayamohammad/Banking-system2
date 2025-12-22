@@ -310,6 +310,7 @@ import domain.observer.NotificationService;
 import domain.observer.RealEmailObserver;
 import domain.report.ReportExporter;
 import domain.report.ReportService;
+import domain.observer.SMSObserver;
 
 import java.util.Scanner;
 
@@ -361,6 +362,7 @@ public class Main {
             System.out.println("7.   Manage Family Group (Composite)");
             System.out.println("8.   External Transfer (Adapter)");
             System.out.println("9.   Generate Reports");
+            System.out.println("10.   Apply Interest (Strategy)");
             System.out.println("0.   Exit");
             System.out.print(">>> Your Choice: ");
 
@@ -424,6 +426,10 @@ public class Main {
 
                         myAccount.addObserver(notificationService);
                         myAccount.addObserver(emailService);
+
+                        String userPhone = MockDatabase.getCustomerById(custId).getPhone();
+                        SMSObserver smsService = new SMSObserver(userPhone);
+                        myAccount.addObserver(smsService);
 
                         MockDatabase.getCustomerById(custId).addAccount(myAccount);
 
@@ -555,6 +561,17 @@ public class Main {
                                 System.out.println("Invalid report choice.");
                         }
                         break;
+
+
+
+                    case 10:
+                        System.out.println("\n--- Calculate Interest (Strategy Pattern) ---");
+
+                        myAccount.applyInterest();
+                        System.out.println("New Balance after interest: $" + myAccount.getBalance());
+                        break;
+
+
 
                     case 0:
                         System.out.println("Exiting System. Goodbye!");
