@@ -37,7 +37,12 @@ public class MockDatabase {
 
 package domain.entities;
 
+
 import java.util.Collection;
+
+import domain.security.Role;
+
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,7 +53,7 @@ public class MockDatabase {
 
     static {
 
-        customers.put("1", new Customer("1", "touka", "touka@example.com", "0911111111", "Damascus"));
+        customers.put("1", new Customer("1", "touka", "touka@example.com", "0911111111", "Damascus", Role.CUSTOMER));
     }
 
 

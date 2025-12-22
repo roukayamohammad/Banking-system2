@@ -48,7 +48,7 @@ public class Main {
 //        System.out.println(c1.getStateName());
 //        System.out.println(c1.getBalance());
 /*
-تطبيق لل composit هون تحت 
+تطبيق لل composit هون تحت
 
 *//*
 
@@ -308,16 +308,22 @@ import domain.entities.MockDatabase;
 import domain.factory.AccountFactory;
 import domain.observer.NotificationService;
 import domain.observer.RealEmailObserver;
+
 import domain.report.ReportExporter;
 import domain.report.ReportService;
 import domain.observer.SMSObserver;
+
+import domain.security.AuthorizationService;
+import domain.security.Permission;
+import domain.security.Role;
+
 
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
 
+        Scanner scanner = new Scanner(System.in);
 
         System.out.println("=========================================");
         System.out.println("    DAMASCUS BANK - ADMIN SETUP        ");
@@ -325,30 +331,29 @@ public class Main {
         System.out.println("Please enter Bank SMTP Credentials to enable alerts:");
 
         System.out.print(">>> Bank Email (Gmail): ");
-
         String bankEmail = scanner.nextLine();
 
         System.out.print(">>> App Password (16 chars): ");
-
         String bankPass = scanner.nextLine();
-
 
         RealEmailObserver emailService = new RealEmailObserver(bankEmail, bankPass);
         NotificationService notificationService = new NotificationService();
+
         Account myAccount = null;
         AccountGroup familyGroup = null;
-
 
         while (true) {
             System.out.println("\n=========================================");
             System.out.println("         MAIN BANKING MENU           ");
             System.out.println("=========================================");
 
-
+            Customer currentUser = null;
             if (myAccount != null) {
+
                 Customer owner = MockDatabase.getCustomerById(myAccount.getOwnerId());
-                System.out.println(" Current User: " + (owner != null ? owner.getName() : "Unknown"));
+                System.out.println(" Current User: " + (owner != null ? owner.getName() : "Unknown")+    " | Role: " + currentUser.getRole());
                 System.out.println(" Account ID: " + myAccount.getAccountId() + " | Account State: " + myAccount.getStateName()+ " | Account Type: "  + myAccount.getClass().getSimpleName());
+
                 System.out.println(" Balance: $" + myAccount.getBalance());
                 System.out.println("-----------------------------------------");
             }
@@ -358,6 +363,8 @@ public class Main {
             System.out.println("3.   Withdraw Money");
             System.out.println("4.   Show Full Details");
             System.out.println("5.   Change State Account");
+
+
             System.out.println("6.   Add Insurance / Overdraft");
             System.out.println("7.   Manage Family Group (Composite)");
             System.out.println("8.   External Transfer (Adapter)");
@@ -368,29 +375,23 @@ public class Main {
 
             int choice = scanner.nextInt();
 
-
             if (myAccount == null && choice != 1 && choice != 0) {
-                System.out.println(" Error: No account active! Please select Option 1 first.");
+                System.out.println(" Error: Please create an account first.");
                 continue;
             }
 
             try {
                 switch (choice) {
-                    case 1:
-                        System.out.println("\n---  CLIENT REGISTRATION & ACCOUNT CREATION ---");
 
-
+                    case 1 -> {
                         System.out.print("Enter Customer National ID: ");
                         String custId = scanner.next();
 
-
                         if (!MockDatabase.isCustomerExist(custId)) {
-                            System.out.println(">>> New Customer Detected! Please enter details:");
-
                             System.out.print("Name: ");
                             String name = scanner.next();
 
-                            System.out.print("Email (Real one for alerts): ");
+                            System.out.print("Email: ");
                             String email = scanner.next();
 
                             System.out.print("Phone: ");
@@ -399,19 +400,33 @@ public class Main {
                             System.out.print("Address: ");
                             String address = scanner.next();
 
+                            System.out.println("Select Role:");
+                            System.out.println("1. Customer");
+                            System.out.println("2. Teller");
+                            System.out.println("3. Manager");
+                            System.out.println("4. Admin");
+                            System.out.print(">>> ");
 
-                            Customer newCust = new Customer(custId, name, email, phone, address);
+                            int r = scanner.nextInt();
+                            Role role = switch (r) {
+                                case 2 -> Role.TELLER;
+                                case 3 -> Role.MANAGER;
+                                case 4 -> Role.ADMIN;
+                                default -> Role.CUSTOMER;
+                            };
+
+                            Customer newCust = new Customer(
+                                    custId, name, email, phone, address, role
+                            );
+
                             MockDatabase.addCustomer(newCust);
-                        } else {
-                            System.out.println(">>> Welcome back, " + MockDatabase.getCustomerById(custId).getName());
                         }
 
-
-                        System.out.println("\nChoose Account Type:");
+                        System.out.println("Choose Account Type:");
                         System.out.println("1. Savings | 2. Checking | 3. Investment | 4. Loan");
-                        System.out.print(">>> Select: ");
-                        int typeIn = scanner.nextInt();
-                        String type = switch (typeIn) {
+                        int t = scanner.nextInt();
+
+                        String type = switch (t) {
                             case 1 -> "SAVINGS";
                             case 2 -> "CHECKING";
                             case 3 -> "INVESTMENT";
@@ -419,10 +434,8 @@ public class Main {
                             default -> "CHECKING";
                         };
 
-
                         String accId = "ACC-" + (int)(Math.random() * 10000);
                         myAccount = AccountFactory.createAccount(type, accId, custId, 0.0);
-
 
                         myAccount.addObserver(notificationService);
                         myAccount.addObserver(emailService);
@@ -433,37 +446,44 @@ public class Main {
 
                         MockDatabase.getCustomerById(custId).addAccount(myAccount);
 
-                        System.out.println(" Account Created Successfully & Linked to Customer!");
-                        break;
+                        System.out.println(" Account Created Successfully!");
+                    }
 
-                    case 2:
-                        System.out.print("Enter amount to deposit: ");
-                        double depAmount = scanner.nextDouble();
-                        myAccount.deposit(depAmount);
-                        break;
+                    // ================= DEPOSIT =================
+                    case 2 -> {
+                        AuthorizationService.checkPermission(
+                                currentUser, Permission.PROCESS_TRANSACTION
+                        );
 
-                    case 3:
-                        System.out.print("Enter amount to withdraw: ");
-                        double withAmount = scanner.nextDouble();
-                        myAccount.withdraw(withAmount);
-                        break;
+                        System.out.print("Deposit Amount: ");
+                        myAccount.deposit(scanner.nextDouble());
+                    }
 
-                    case 4:
-                        System.out.println("\n---------------- FULL REPORT ----------------");
+                    // ================= WITHDRAW =================
+                    case 3 -> {
+                        AuthorizationService.checkPermission(
+                                currentUser, Permission.PROCESS_TRANSACTION
+                        );
 
-                        Customer c = MockDatabase.getCustomerById(myAccount.getOwnerId());
-                        System.out.println(c.toString());
-                        System.out.println("Current Active Account State: " + myAccount.getStateName());
+                        System.out.print("Withdraw Amount: ");
+                        myAccount.withdraw(scanner.nextDouble());
+                    }
 
-                        if (familyGroup != null) {
-                            System.out.println("\n[Family Group Hierarchy]");
-                            familyGroup.display(0);
-                            System.out.println("Total Family Balance: $" + familyGroup.getBalance());
-                        }
-                        System.out.println("---------------------------------------------");
-                        break;
+                    // ================= DETAILS =================
+                    case 4 -> {
+                        System.out.println(currentUser);
+                        System.out.println("State: " + myAccount.getStateName());
+                    }
 
-                    case 5:
+
+
+
+                    // ================= STATE =================
+                    case 5 -> {
+                        AuthorizationService.checkPermission(
+                                currentUser, Permission.APPROVE_TRANSACTION
+                        );
+
                         System.out.println("\n--- Account State Management ---");
                         System.out.println("Current State: " + myAccount.getStateName());
                         System.out.println("1. Freeze Account");
@@ -488,48 +508,51 @@ public class Main {
                             default:
                                 System.out.println("Invalid state option.");
                         }
-                        break;
+                    }
+                    // ================= DECORATOR =================
+                    case 6 -> {
+                        AuthorizationService.checkPermission(
+                                currentUser, Permission.MANAGE_USERS
+                        );
 
-                    case 6:
-                        System.out.println("\n--- Add Features (Decorator) ---");
-                        System.out.println("1. Overdraft Protection (Limit: $1000)");
-                        System.out.println("2. Insurance Policy (Cost: $50/mo)");
-                        System.out.print("Select: ");
-                        int dec = scanner.nextInt();
-                        if (dec == 1) {
-                            myAccount = new OverdraftProtectionDecorator(myAccount, 1000.0);
-                            System.out.println(" Overdraft feature applied.");
-                        } else if (dec == 2) {
-                            myAccount = new InsuranceDecorator(myAccount, 50000.0, 50.0);
-                            System.out.println(" Insurance applied.");
-                        }
-                        break;
+                        System.out.println("1. Overdraft | 2. Insurance");
+                        int d = scanner.nextInt();
 
-                    case 7:
-                        System.out.println("\n--- Family Group (Composite) ---");
-                        if (familyGroup == null) {
-                            familyGroup = new AccountGroup("Family Fund");
-                        }
+                        if (d == 1)
+                            myAccount = new OverdraftProtectionDecorator(myAccount, 1000);
+                        else
+                            myAccount = new InsuranceDecorator(myAccount, 50000, 50);
+                    }
+
+                    // ================= COMPOSITE =================
+                    case 7 -> {
+                        AuthorizationService.checkPermission(
+                                currentUser, Permission.MANAGE_USERS
+                        );
+
+                        if (familyGroup == null)
+                            familyGroup = new AccountGroup("Family Group");
 
                         familyGroup.add(new SingleAccount(myAccount));
-                        System.out.println(" Current account added to 'Family Fund'.");
-                        System.out.println("Group Total: $" + familyGroup.getBalance());
-                        break;
+                        System.out.println("Added to Family Group.");
+                    }
 
-                    case 8:
-                        System.out.println("\n--- External Bank Transfer ---");
-                        System.out.print("Amount coming from external bank: ");
-                        double extVal = scanner.nextDouble();
+                    // ================= ADAPTER =================
+                    case 8 -> {
+                        AuthorizationService.checkPermission(
+                                currentUser, Permission.PROCESS_TRANSACTION
+                        );
 
-                        ExternalBank extBank = new ExternalBank();
-                        BankAdapter adapter = new BankAdapter(extBank);
+                        System.out.print("External Amount: ");
+                        double val = scanner.nextDouble();
 
-                        System.out.println("Processing via Adapter...");
-                        adapter.pay(extVal);
-                        myAccount.deposit(extVal);
-                        break;
+                        BankAdapter adapter = new BankAdapter(new ExternalBank());
+                        adapter.pay(val);
+                        myAccount.deposit(val);
+                    }
 
-                    case 9:
+
+                    case 9 -> {
                         System.out.println("\n--- REPORT GENERATION ---");
                         System.out.println("1. Daily Transactions");
                         System.out.println("2. Account Summary");
@@ -562,29 +585,33 @@ public class Main {
                         }
                         break;
 
+                    }
 
 
-                    case 10:
-                        System.out.println("\n--- Calculate Interest (Strategy Pattern) ---");
+                    // ================= STRATEGY =================
+                    case 10 -> {
+                        AuthorizationService.checkPermission(
+                                currentUser, Permission.VIEW_SYSTEM_STATS
+                        );
+
 
                         myAccount.applyInterest();
-                        System.out.println("New Balance after interest: $" + myAccount.getBalance());
-                        break;
+                        System.out.println("New Balance: $" + myAccount.getBalance());
+                    }
 
-
-
-                    case 0:
-                        System.out.println("Exiting System. Goodbye!");
+                    case 0 -> {
+                        System.out.println("Goodbye!");
                         return;
+                    }
 
-                    default:
-                        System.out.println("Invalid Option.");
+                    default -> System.out.println("Invalid Option");
                 }
+
+             }catch (SecurityException se) {
+                System.out.println(" ACCESS DENIED: " + se.getMessage());
             } catch (Exception e) {
-                System.out.println(" Error: " + e.getMessage());
-                scanner.nextLine();
+                System.out.println(" ERROR: " + e.getMessage());
             }
         }
     }
 }
-
