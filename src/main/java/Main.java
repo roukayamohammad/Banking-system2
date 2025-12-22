@@ -308,6 +308,7 @@ import domain.entities.MockDatabase;
 import domain.factory.AccountFactory;
 import domain.observer.NotificationService;
 import domain.observer.RealEmailObserver;
+import domain.observer.SMSObserver;
 
 import java.util.Scanner;
 
@@ -422,6 +423,10 @@ public class Main {
 
                         myAccount.addObserver(notificationService);
                         myAccount.addObserver(emailService);
+
+                        String userPhone = MockDatabase.getCustomerById(custId).getPhone();
+                        SMSObserver smsService = new SMSObserver(userPhone);
+                        myAccount.addObserver(smsService);
 
                         MockDatabase.getCustomerById(custId).addAccount(myAccount);
 
