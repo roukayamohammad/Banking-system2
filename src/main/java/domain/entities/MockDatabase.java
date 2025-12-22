@@ -1,0 +1,68 @@
+/*package domain.entities;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class MockDatabase {
+
+    // محاكاة لجدول العملاء في قاعدة البيانات
+    private static final Map<String, Customer> customers = new HashMap<>();
+
+    static {
+        // ⚠️ هنا سنضيف بيانات وهمية، ولكن يجب أن تتطابق مع الـ Constructor الخاص بك:
+        // (ID, Name, Email, Phone, Address)
+
+        // العميل الأول (تجريبي)
+        customers.put("1", new Customer("1", "Ahmad", "ahmad@example.com", "0911111111", "Damascus"));
+
+        // العميل الثاني (مهم جداً للتجربة)
+        // 🔴 ضع إيميلك الحقيقي هنا لكي تصلك الرسالة عند التجربة
+        customers.put("101", new Customer("101", "My Test User", "tukaalshallah2000@gmail.com", "0922222222", "Aleppo"));
+
+        // عميل ثالث
+        customers.put("2", new Customer("2", "Sara", "sara@test.com", "0933333333", "Homs"));
+    }
+
+    // دالة البحث عن العميل
+    public static Customer getCustomerById(String customerId) {
+        // نقوم بتحويل الـ ID إلى String لضمان التوافق (في حال كان المرسل رقم int)
+        return customers.get(String.valueOf(customerId));
+    }
+
+    // دالة إضافية احتياطية في حال كان الـ ID يأتي كرقم (int) من كلاس Account
+    public static Customer getCustomerById(int customerId) {
+        return customers.get(String.valueOf(customerId));
+    }
+}*/
+
+package domain.entities;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class MockDatabase {
+
+
+    private static final Map<String, Customer> customers = new HashMap<>();
+
+    static {
+
+        customers.put("1", new Customer("1", "touka", "touka@example.com", "0911111111", "Damascus"));
+    }
+
+
+    public static void addCustomer(Customer customer) {
+        customers.put(customer.getCustomerId(), customer);
+        System.out.println(" Database Log: Customer [" + customer.getName() + "] saved successfully.");
+    }
+
+
+    public static boolean isCustomerExist(String id) {
+        return customers.containsKey(id);
+    }
+
+
+    public static Customer getCustomerById(String customerId) {
+        return customers.get(String.valueOf(customerId));
+    }
+}
