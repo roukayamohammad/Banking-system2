@@ -3,6 +3,7 @@ package domain.entities;
 import domain.observer.Observer;
 import domain.state.AccountState;
 import domain.state.ActiveState;
+import domain.strategy.InterestStrategy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ public abstract class Account {
     protected String ownerId;
     protected double balance;
     protected AccountState state;
+    protected InterestStrategy interestStrategy;
 
 
     private List<Observer> observers = new ArrayList<>();
@@ -41,7 +43,7 @@ public abstract class Account {
         }
     }
 
-    // Getters and Setters
+
     public AccountState getState() {
         return state;
     }
@@ -82,7 +84,7 @@ public abstract class Account {
         notifyObservers("Withdrawn $" + amount + " | New Balance: $" + balance);
     }
 
-    // State operations delegation
+
     public void deposit(double amount) {
         state.deposit(amount);
     }
@@ -112,6 +114,24 @@ public abstract class Account {
     }
 
 
+    public void setInterestStrategy(InterestStrategy interestStrategy) {
+        this.interestStrategy = interestStrategy;
+    }
+
+    public void applyInterest() {
+        if (this.interestStrategy == null) {
+            throw new IllegalStateException("Interest strategy not set");
+        } else {
+            double interest = this.interestStrategy.calculateInterest(this.balance);
+            this.balance += interest;
+            if (interest >= 0.0) {
+                System.out.printf("Interest gain: $%.2f%n", interest);
+            } else {
+                System.out.printf("Interest loss: $%.2f%n", -interest);
+            }
+
+        }
+    }
     public void changeState(AccountState newState) {
         String oldStateName = this.state.getName();
         this.state = newState;
