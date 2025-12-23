@@ -118,7 +118,7 @@ public class Main {
         System.out.println("Account created and linked successfully.");
     }
 
-    // ================= REGISTER =================
+
     static void createUserAndAccount(String id) {
 
         System.out.println("New User Registration");
@@ -175,34 +175,46 @@ public class Main {
         System.out.println("Account Created Successfully");
     }
 
-    // ================= MENU =================
-    static void showMenuByRole() {
 
+    static void showMenuByRole() {
         System.out.println("\n========= MENU =========");
         System.out.println("1. View Account Details");
 
-        if (currentUser.getRole() == Role.CUSTOMER) {
-            System.out.println("2. Manage My Accounts"); // جديد
-            System.out.println("12.   Customer Support");
 
+        if (currentUser.getRole() == Role.CUSTOMER) {
+            System.out.println("2. Manage My Accounts (Composite)");
+            System.out.println("12. Customer Support");
         }
+
 
         if (has(Permission.PROCESS_TRANSACTION)) {
             System.out.println("3. Deposit");
             System.out.println("4. Withdraw");
+            System.out.println("8. External Transfer (Adapter)");
         }
+
 
         if (has(Permission.APPROVE_TRANSACTION)) {
             System.out.println("5. Change Account State");
-            System.out.println("12.   Customer Support");
+            System.out.println("12. Customer Support (View Tickets)");
         }
+
 
         if (has(Permission.VIEW_REPORTS)) {
             System.out.println("6. Reports");
         }
 
+
+        if (has(Permission.MANAGE_USERS)) {
+            System.out.println("9. Add Features (Decorator: Insurance/Overdraft)");
+        }
+
+        if (has(Permission.VIEW_SYSTEM_STATS)) {
+            System.out.println("10. Apply Interest (Strategy)");
+        }
+
         System.out.println("0. Return to Login");
-        System.out.print(">>> ");
+        System.out.print(">>> Please enter number: ");
     }
     //
     static void handleCustomerAccounts() {
@@ -219,10 +231,10 @@ public class Main {
             System.out.println("0. Back");
             System.out.print(">>> ");
             int choice = scanner.nextInt();
-            scanner.nextLine(); // تنظيف البافر
+            scanner.nextLine();
 
             switch (choice) {
-                case 1 -> { // عرض الحسابات الفردية + الغروبات
+                case 1 -> {
                     System.out.println("Your Accounts:");
                     for (Account acc : currentUser.getAccounts()) {
                         System.out.println(acc);
@@ -231,12 +243,12 @@ public class Main {
                     if (!currentUser.getFamilyGroups().isEmpty()) {
                         System.out.println("Family Groups:");
                         for (AccountGroup group : currentUser.getFamilyGroups()) {
-                            group.display(2); // تمرير 2 للـ indent
+                            group.display(2);
                         }
                     }
                 }
 
-                case 2 -> { // إضافة حساب لغروب
+                case 2 -> {
                     if (currentUser.getFamilyGroups().isEmpty()) {
                         System.out.println("No Family Group exists. Please create one first.");
                         break;
@@ -247,7 +259,7 @@ public class Main {
                         System.out.println((i + 1) + ". " + currentUser.getFamilyGroups().get(i).getName());
                     }
                     int gIndex = scanner.nextInt() - 1;
-                    scanner.nextLine(); // تنظيف البافر
+                    scanner.nextLine();
 
                     if (gIndex < 0 || gIndex >= currentUser.getFamilyGroups().size()) {
                         System.out.println("Invalid group selection.");
@@ -273,7 +285,7 @@ public class Main {
                     System.out.println("Account added to family group [" + selectedGroup.getName() + "].");
                 }
 
-                case 3 -> { // إزالة حساب من الغروب
+                case 3 -> {
                     if (currentUser.getFamilyGroups().isEmpty()) {
                         System.out.println("No Family Group exists.");
                         break;
@@ -284,7 +296,7 @@ public class Main {
                         System.out.println((i + 1) + ". " + currentUser.getFamilyGroups().get(i).getName());
                     }
                     int gIndex = scanner.nextInt() - 1;
-                    scanner.nextLine(); // تنظيف البافر
+                    scanner.nextLine();
 
                     if (gIndex < 0 || gIndex >= currentUser.getFamilyGroups().size()) {
                         System.out.println("Invalid group selection.");
@@ -309,11 +321,11 @@ public class Main {
                     }
                 }
 
-                case 4 -> { // إنشاء حساب جديد
+                case 4 -> {
                     createAccountForExistingUser(currentUser);
                 }
 
-                case 5 -> { // إنشاء Family Group جديد
+                case 5 -> {
                     System.out.print("Enter Family Group Name: ");
                     String groupName = scanner.nextLine();
 
@@ -323,7 +335,7 @@ public class Main {
                     System.out.println("Family Group [" + groupName + "] created successfully.");
                 }
 
-                // ================= COMPOSITE =================
+
                 case 6 -> {
                     System.out.println("\n--- Family Group (Composite) ---");
                     System.out.println("1. Create group");
@@ -388,163 +400,137 @@ public class Main {
 
 
 
-    // ================= HANDLER =================
-    static boolean handleChoice(int choice) {
 
+    static boolean handleChoice(int choice) {
         try {
             switch (choice) {
 
                 case 1 -> {
-                    AuthorizationService.checkPermission(
-                            currentUser, Permission.VIEW_OWN_ACCOUNT);
-
-                    if (currentAccount == null) {
-                        System.out.println("Admin does not own a bank account.");
-                        return false;
-                    }
-
-                    System.out.println(currentAccount);
+                    AuthorizationService.checkPermission(currentUser, Permission.VIEW_OWN_ACCOUNT);
+                    if (currentAccount != null) System.out.println(currentAccount);
+                    else System.out.println("No active account selected.");
                 }
+
 
                 case 2 -> {
                     if (currentUser.getRole() == Role.CUSTOMER) {
                         handleCustomerAccounts();
                     } else {
-                        AuthorizationService.checkPermission(currentUser, Permission.PROCESS_TRANSACTION);
-                        System.out.print("Amount: ");
-                        currentAccount.deposit(scanner.nextDouble());
+                        System.out.println("Option available for Customers only.");
                     }
                 }
 
 
                 case 3 -> {
-                    AuthorizationService.checkPermission(
-                            currentUser, Permission.PROCESS_TRANSACTION);
-                    System.out.print("Amount: ");
-                    currentAccount.withdraw(scanner.nextDouble());
+                    AuthorizationService.checkPermission(currentUser, Permission.PROCESS_TRANSACTION);
+                    System.out.print("Enter Deposit Amount: ");
+                    currentAccount.deposit(scanner.nextDouble());
                 }
 
+
                 case 4 -> {
-                    AuthorizationService.checkPermission(
-                            currentUser, Permission.APPROVE_TRANSACTION
-                    );
-
-                    Account targetAccount = currentAccount;
-
-                    // إذا المستخدم ADMIN، يحدد ID الحساب المراد تغييره
-                    if (currentUser.getRole() == Role.ADMIN) {
-                        System.out.print("Enter Account ID to change state: ");
-                        String accId = scanner.next();
-                        targetAccount = MockDatabase.getAccountById(accId); // تحتاج هذه الوظيفة في MockDatabase
-                        if (targetAccount == null) {
-                            System.out.println("Account not found!");
-                            break;
-                        }
-                        System.out.println("Changing state for Account ID: " + accId);
-                    }
-
-                    System.out.println("\n--- Account State Management ---");
-                    System.out.println("Current State: " + targetAccount.getStateName());
-                    System.out.println("1. Freeze Account");
-                    System.out.println("2. Suspend Account");
-                    System.out.println("3. Activate Account");
-                    System.out.println("4. Close Account");
-                    System.out.print(">>> Choose action: ");
-                    int stateChoice = scanner.nextInt();
-                    switch (stateChoice) {
-                        case 1 -> targetAccount.freeze();
-                        case 2 -> targetAccount.suspend();
-                        case 3 -> targetAccount.activate();
-                        case 4 -> targetAccount.close();
-                        default -> System.out.println("Invalid state option.");
-                    }
+                    AuthorizationService.checkPermission(currentUser, Permission.PROCESS_TRANSACTION);
+                    System.out.print("Enter Withdraw Amount: ");
+                    currentAccount.withdraw(scanner.nextDouble());
                 }
 
 
                 case 5 -> {
-                    AuthorizationService.checkPermission(
-                            currentUser, Permission.VIEW_REPORTS
-                    );
+                    AuthorizationService.checkPermission(currentUser, Permission.APPROVE_TRANSACTION);
 
-                    System.out.println("\n--- REPORT GENERATION ---");
-                    System.out.println("1. Daily Transactions");
-                    System.out.println("2. Account Summary");
-                    System.out.println("3. Audit Log");
-                    System.out.println("4. Export Daily Transactions");
-                    System.out.print(">>> Select Report Type: ");
+                    Account target = currentAccount;
+                    if (currentUser.getRole() == Role.ADMIN) {
+                        System.out.print("Enter Account ID to modify: ");
+                        String tId = scanner.next();
+                        target = MockDatabase.getAccountById(tId);
+                    }
 
-                    int reportChoice = scanner.nextInt();
-
-                    switch (reportChoice) {
-                        case 1 -> ReportService.dailyTransactions();
-                        case 2 -> ReportService.accountSummary();
-                        case 3 -> ReportService.auditLogs();
-                        case 4 -> ReportExporter.exportDailyTransactions("daily_transactions.txt");
-                        default -> System.out.println("Invalid report choice.");
+                    if (target != null) {
+                        System.out.println("Current: " + target.getStateName());
+                        System.out.println("1. Freeze | 2. Suspend | 3. Activate | 4. Close");
+                        int st = scanner.nextInt();
+                        switch (st) {
+                            case 1 -> target.freeze();
+                            case 2 -> target.suspend();
+                            case 3 -> target.activate();
+                            case 4 -> target.close();
+                        }
+                    } else {
+                        System.out.println("Account not found.");
                     }
                 }
 
+
                 case 6 -> {
-                    AuthorizationService.checkPermission(
-                            currentUser, Permission.MANAGE_USERS
-                    );
+                    AuthorizationService.checkPermission(currentUser, Permission.VIEW_REPORTS);
+                    System.out.println("1. Daily | 2. Summary | 3. Audit | 4. Export");
+                    int rep = scanner.nextInt();
+                    switch (rep) {
+                        case 1 -> ReportService.dailyTransactions();
+                        case 2 -> ReportService.accountSummary();
+                        case 3 -> ReportService.auditLogs();
+                        case 4 -> ReportExporter.exportDailyTransactions("daily_report.txt");
+                    }
+                }
 
-                    System.out.println("1. Overdraft | 2. Insurance");
-                    int d = scanner.nextInt();
 
-                    if (d == 1)
+                case 8 -> {
+                    AuthorizationService.checkPermission(currentUser, Permission.PROCESS_TRANSACTION);
+                    System.out.print("Enter External Amount to Receive: ");
+                    double val = scanner.nextDouble();
+                    BankAdapter adapter = new BankAdapter(new ExternalBank());
+                    adapter.pay(val);
+                    currentAccount.deposit(val);
+                }
+
+
+                case 9 -> {
+                    AuthorizationService.checkPermission(currentUser, Permission.MANAGE_USERS);
+                    System.out.println("1. Overdraft ($1000) | 2. Insurance ($50k)");
+                    int dec = scanner.nextInt();
+                    if (dec == 1) {
                         currentAccount = new OverdraftProtectionDecorator(currentAccount, 1000);
-                    else
+                        System.out.println("Overdraft Added!");
+                    } else {
                         currentAccount = new InsuranceDecorator(currentAccount, 50000, 50);
+                        System.out.println("Insurance Added!");
+                    }
                 }
 
-                case 7 -> {
-                    AuthorizationService.checkPermission(
-                            currentUser, Permission.VIEW_SYSTEM_STATS);
+
+                case 10 -> {
+                    AuthorizationService.checkPermission(currentUser, Permission.VIEW_SYSTEM_STATS);
                     currentAccount.applyInterest();
-                    System.out.println("New Balance: $" + currentAccount.getBalance());
+                    System.out.println("Interest Applied. New Balance: " + currentAccount.getBalance());
                 }
-                // ================= SUPPORT SYSTEM =================
-                case 12 -> {
-                    System.out.println("\n--- 🎫 Customer Support Center ---");
-                    System.out.println("1. Submit a Complaint/Query");
-                    System.out.println("2. View All Tickets (Admin/Manager Only)");
-                    System.out.print(">>> Select: ");
-                    int sup = scanner.nextInt();
 
+
+                case 12 -> {
+                    System.out.println("\n--- Customer Support ---");
+                    System.out.println("1. Create Ticket (Customer) | 2. View Tickets (Admin)");
+                    int sup = scanner.nextInt();
                     if (sup == 1) {
-                        System.out.print("Describe your issue: ");
+                        System.out.print("Describe issue: ");
                         scanner.nextLine();
                         String issue = scanner.nextLine();
-
-
-                        MockDatabase.addTicket(new domain.entities.SupportTicket(
-                                currentUser.getCustomerId(), issue
-                        ));
-                    } else if (sup == 2) {
-
+                        MockDatabase.addTicket(new domain.entities.SupportTicket(currentUser.getCustomerId(), issue));
+                    } else {
                         AuthorizationService.checkPermission(currentUser, Permission.MANAGE_USERS);
-
-                        System.out.println("\n📋 --- All Support Tickets ---");
                         var tickets = MockDatabase.getAllTickets();
-                        if(tickets.isEmpty()) System.out.println("No tickets found.");
+                        if (tickets.isEmpty()) System.out.println("No tickets.");
                         else tickets.forEach(System.out::println);
                     }
                 }
 
-
-                case 0 -> {
-                    System.out.println("\nReturning to login screen...\n");
-                    return true; // إعادة المستخدم لشاشة البداية
-                }
-
-                default -> System.out.println("Invalid Option");
+                case 0 -> { return true; }
+                default -> System.out.println("Invalid option.");
             }
-
         } catch (SecurityException e) {
-            System.out.println("ACCESS DENIED");
+            System.out.println("⛔ ACCESS DENIED: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            scanner.nextLine();
         }
-
         return false;
     }
 
