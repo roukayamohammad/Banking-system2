@@ -23,15 +23,10 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Main {
-
     static Scanner scanner = new Scanner(System.in);
 
     static Customer currentUser;
     static Account currentAccount;
-   static AccountGroup familyGroup = null;
-//    static AccountGroup familyGroup = new AccountGroup("My Family Group");
-//static AccountGroup familyGroup = null; // ما في غروب افتراضي
-
 
     static NotificationService notificationService = new NotificationService();
 
@@ -43,23 +38,25 @@ public class Main {
     public static void main(String[] args) {
 
         System.out.println("=====================================");
-        System.out.println("      DAMASCUS BANK SYSTEM        ");
+        System.out.println("        DAMASCUS BANK SYSTEM          ");
         System.out.println("=====================================");
 
         while (true) {
-            loginOrRegister(); // شاشة البداية
-            currentAccount = currentUser.getAccounts().isEmpty() ? null : currentUser.getAccounts().get(0);
+            loginOrRegister();
+
+            currentAccount = currentUser.getAccounts().isEmpty()
+                    ? null
+                    : currentUser.getAccounts().get(0);
 
             boolean backToLogin = false;
 
             while (!backToLogin) {
                 showMenuByRole();
                 int choice = scanner.nextInt();
-                backToLogin = handleChoice(choice); // true لو ضغط 0
+                backToLogin = handleChoice(choice);
             }
         }
     }
-
     // ================= LOGIN =================
     static void loginOrRegister() {
 
@@ -175,48 +172,40 @@ public class Main {
         System.out.println("Account Created Successfully");
     }
 
-
     static void showMenuByRole() {
-        System.out.println("\n========= MENU =========");
-        System.out.println("1. View Account Details");
 
+        System.out.println("\n========= MAIN MENU =========");
+        System.out.println("1. View Account Details");
 
         if (currentUser.getRole() == Role.CUSTOMER) {
             System.out.println("2. Manage My Accounts (Composite)");
-            System.out.println("12. Customer Support");
-        }
-
-
-        if (has(Permission.PROCESS_TRANSACTION)) {
             System.out.println("3. Deposit");
             System.out.println("4. Withdraw");
-            System.out.println("8. External Transfer (Adapter)");
+            System.out.println("5. External Transfer");
+            System.out.println("6. Customer Support");
         }
-
 
         if (has(Permission.APPROVE_TRANSACTION)) {
-            System.out.println("5. Change Account State");
-            System.out.println("12. Customer Support (View Tickets)");
+            System.out.println("7. Change Account State");
         }
-
 
         if (has(Permission.VIEW_REPORTS)) {
-            System.out.println("6. Reports");
+            System.out.println("8. Reports");
         }
 
-
         if (has(Permission.MANAGE_USERS)) {
-            System.out.println("9. Add Features (Decorator: Insurance/Overdraft)");
+            System.out.println("9. Add Account Features");
         }
 
         if (has(Permission.VIEW_SYSTEM_STATS)) {
-            System.out.println("10. Apply Interest (Strategy)");
+            System.out.println("10. Apply Interest");
         }
 
-        System.out.println("0. Return to Login");
-        System.out.print(">>> Please enter number: ");
+        System.out.println("0. Logout");
+        System.out.print(">>> ");
     }
-    //
+
+
     static void handleCustomerAccounts() {
         boolean back = false;
 
@@ -227,176 +216,108 @@ public class Main {
             System.out.println("3. Remove Account from Family Group");
             System.out.println("4. Create New Account");
             System.out.println("5. Create New Family Group");
-            System.out.println("6.   Manage Family Group (Composite)");
+            System.out.println("6. Show hierarchy");
+            System.out.println("7. Total balance");
+            System.out.println("8. Deposit to group");
+            System.out.println("9. Withdraw from group");
             System.out.println("0. Back");
             System.out.print(">>> ");
+
             int choice = scanner.nextInt();
             scanner.nextLine();
 
             switch (choice) {
+
                 case 1 -> {
-                    System.out.println("Your Accounts:");
                     for (Account acc : currentUser.getAccounts()) {
                         System.out.println(acc);
-                    }
-
-                    if (!currentUser.getFamilyGroups().isEmpty()) {
-                        System.out.println("Family Groups:");
-                        for (AccountGroup group : currentUser.getFamilyGroups()) {
-                            group.display(2);
-                        }
                     }
                 }
 
                 case 2 -> {
-                    if (currentUser.getFamilyGroups().isEmpty()) {
-                        System.out.println("No Family Group exists. Please create one first.");
-                        break;
-                    }
+                    AccountGroup group = selectFamilyGroup();
+                    if (group == null) break;
 
-                    System.out.println("Select Family Group:");
-                    for (int i = 0; i < currentUser.getFamilyGroups().size(); i++) {
-                        System.out.println((i + 1) + ". " + currentUser.getFamilyGroups().get(i).getName());
-                    }
-                    int gIndex = scanner.nextInt() - 1;
-                    scanner.nextLine();
-
-                    if (gIndex < 0 || gIndex >= currentUser.getFamilyGroups().size()) {
-                        System.out.println("Invalid group selection.");
-                        break;
-                    }
-
-                    AccountGroup selectedGroup = currentUser.getFamilyGroups().get(gIndex);
-
-                    System.out.print("Enter Account ID to add to family group: ");
+                    System.out.print("Enter Account ID to add: ");
                     String accId = scanner.nextLine();
 
-                    Account accToAdd = currentUser.getAccounts().stream()
+                    Account acc = currentUser.getAccounts().stream()
                             .filter(a -> a.getAccountId().equals(accId))
                             .findFirst()
                             .orElse(null);
 
-                    if (accToAdd == null) {
-                        System.out.println("Account not found!");
-                        break;
+                    if (acc == null) {
+                        System.out.println("Account not found.");
+                    } else {
+                        group.add(new SingleAccount(acc));
+                        System.out.println("Account added successfully.");
                     }
-
-                    selectedGroup.add(new SingleAccount(accToAdd));
-                    System.out.println("Account added to family group [" + selectedGroup.getName() + "].");
                 }
 
                 case 3 -> {
-                    if (currentUser.getFamilyGroups().isEmpty()) {
-                        System.out.println("No Family Group exists.");
-                        break;
+                    AccountGroup group = selectFamilyGroup();
+                    if (group == null) break;
+
+                    List<AccountComponent> children = group.getChildren();
+                    for (int i = 0; i < children.size(); i++) {
+                        System.out.println((i + 1) + ". " + children.get(i).getName());
                     }
 
-                    System.out.println("Select Family Group to remove account from:");
-                    for (int i = 0; i < currentUser.getFamilyGroups().size(); i++) {
-                        System.out.println((i + 1) + ". " + currentUser.getFamilyGroups().get(i).getName());
-                    }
-                    int gIndex = scanner.nextInt() - 1;
+                    System.out.print("Select account to remove: ");
+                    int idx = scanner.nextInt() - 1;
                     scanner.nextLine();
 
-                    if (gIndex < 0 || gIndex >= currentUser.getFamilyGroups().size()) {
-                        System.out.println("Invalid group selection.");
-                        break;
-                    }
-
-                    AccountGroup selectedGroup = currentUser.getFamilyGroups().get(gIndex);
-
-                    System.out.print("Enter Account ID to remove from family group: ");
-                    String accId = scanner.nextLine();
-
-                    Account accToRemove = currentUser.getAccounts().stream()
-                            .filter(a -> a.getAccountId().equals(accId))
-                            .findFirst()
-                            .orElse(null);
-
-                    if (accToRemove != null) {
-                        selectedGroup.remove(new SingleAccount(accToRemove));
-                        System.out.println("Account removed from family group [" + selectedGroup.getName() + "].");
-                    } else {
-                        System.out.println("Account not found!");
+                    if (idx >= 0 && idx < children.size()) {
+                        group.remove(children.get(idx));
+                        System.out.println("Account removed.");
                     }
                 }
 
-                case 4 -> {
-                    createAccountForExistingUser(currentUser);
-                }
+                case 4 -> createAccountForExistingUser(currentUser);
 
                 case 5 -> {
                     System.out.print("Enter Family Group Name: ");
-                    String groupName = scanner.nextLine();
-
-                    AccountGroup newGroup = new AccountGroup(groupName);
-                    currentUser.addFamilyGroup(newGroup);
-
-                    System.out.println("Family Group [" + groupName + "] created successfully.");
+                    String name = scanner.nextLine();
+                    currentUser.addFamilyGroup(new AccountGroup(name));
+                    System.out.println("Family Group created.");
                 }
-
 
                 case 6 -> {
-                    System.out.println("\n--- Family Group (Composite) ---");
-                    System.out.println("1. Create group");
-                    System.out.println("2. Add account");
-                    System.out.println("3. Remove account");
-                    System.out.println("4. Show hierarchy");
-                    System.out.println("5. Total balance");
-                    System.out.println("6. Deposit to group");
-                    System.out.println("7. Withdraw from group");
-                    System.out.print(">>> ");
-
-                    int g = scanner.nextInt();
-
-                    switch (g) {
-                       // AccountGroup familyGroup = null;
-                        case 1 -> {
-                            System.out.print("Group name: ");
-                            familyGroup = new AccountGroup(scanner.next());
-                        }
-                        case 2 -> {
-                            if (familyGroup == null) break;
-                            familyGroup.add(new SingleAccount(currentAccount));
-                        }
-                        case 3 -> {
-                            if (familyGroup == null) break;
-                            List<AccountComponent> list = familyGroup.getChildren();
-                            for (int i = 0; i < list.size(); i++)
-                                System.out.println((i + 1) + ". " + list.get(i).getName());
-                            System.out.print("Choose: ");
-                            int idx = scanner.nextInt() - 1;
-                            if (idx >= 0 && idx < list.size())
-                                familyGroup.remove(list.get(idx));
-                        }
-                        case 4 -> {
-                            if (familyGroup != null) familyGroup.display(0);
-                        }
-                        case 5 -> {
-                            if (familyGroup != null)
-                                System.out.println("Total: $" + familyGroup.getBalance());
-                        }
-                        case 6 -> {
-                            if (familyGroup == null) break;
-                            System.out.print("Amount: ");
-                            familyGroup.deposit(scanner.nextDouble());
-                        }
-                        case 7 -> {
-                            if (familyGroup == null) break;
-                            System.out.print("Amount: ");
-                            familyGroup.withdraw(scanner.nextDouble());
-                        }
-                    }
-
+                    AccountGroup group = selectFamilyGroup();
+                    if (group != null) group.display(0);
                 }
 
+                case 7 -> {
+                    AccountGroup group = selectFamilyGroup();
+                    if (group != null)
+                        System.out.println("Total Balance: $" + group.getBalance());
+                }
+
+                case 8 -> {
+                    AccountGroup group = selectFamilyGroup();
+                    if (group == null) break;
+
+                    System.out.print("Amount: ");
+                    group.deposit(scanner.nextDouble());
+                    System.out.println("Deposit successful.");
+                }
+
+                case 9 -> {
+                    AccountGroup group = selectFamilyGroup();
+                    if (group == null) break;
+
+                    System.out.print("Amount: ");
+                    group.withdraw(scanner.nextDouble());
+                    System.out.println("Withdraw successful.");
+                }
 
                 case 0 -> back = true;
 
-                default -> System.out.println("Invalid option");
+                default -> System.out.println("Invalid option.");
             }
         }
     }
+
 
 
 
@@ -407,7 +328,12 @@ public class Main {
 
                 case 1 -> {
                     AuthorizationService.checkPermission(currentUser, Permission.VIEW_OWN_ACCOUNT);
-                    if (currentAccount != null) System.out.println(currentAccount);
+                    if (currentUser != null) {
+                        System.out.println(currentUser);
+                        if (currentAccount != null) {
+                            System.out.println(currentAccount);
+                        }
+                    }
                     else System.out.println("No active account selected.");
                 }
 
@@ -435,7 +361,7 @@ public class Main {
                 }
 
 
-                case 5 -> {
+                case 7 -> {
                     AuthorizationService.checkPermission(currentUser, Permission.APPROVE_TRANSACTION);
 
                     Account target = currentAccount;
@@ -461,7 +387,7 @@ public class Main {
                 }
 
 
-                case 6 -> {
+                case 8 -> {
                     AuthorizationService.checkPermission(currentUser, Permission.VIEW_REPORTS);
                     System.out.println("1. Daily | 2. Summary | 3. Audit | 4. Export");
                     int rep = scanner.nextInt();
@@ -474,7 +400,7 @@ public class Main {
                 }
 
 
-                case 8 -> {
+                case 5 -> {
                     AuthorizationService.checkPermission(currentUser, Permission.PROCESS_TRANSACTION);
                     System.out.print("Enter External Amount to Receive: ");
                     double val = scanner.nextDouble();
@@ -483,44 +409,76 @@ public class Main {
                     currentAccount.deposit(val);
                 }
 
-
                 case 9 -> {
                     AuthorizationService.checkPermission(currentUser, Permission.MANAGE_USERS);
+
                     System.out.println("1. Overdraft ($1000) | 2. Insurance ($50k)");
                     int dec = scanner.nextInt();
+
+                    System.out.print("Enter Account ID: ");
+                    String accId = scanner.next();
+
+                    Account target = MockDatabase.getAccountById(accId);
+
+                    if (target == null) {
+                        System.out.println("Account not found.");
+                        return false;
+                    }
                     if (dec == 1) {
-                        currentAccount = new OverdraftProtectionDecorator(currentAccount, 1000);
-                        System.out.println("Overdraft Added!");
+                        target = new OverdraftProtectionDecorator(target, 1000);
+                        System.out.println("Overdraft added to account " + accId);
                     } else {
-                        currentAccount = new InsuranceDecorator(currentAccount, 50000, 50);
-                        System.out.println("Insurance Added!");
+                        target = new InsuranceDecorator(target, 50000, 50);
+                        System.out.println("Insurance added to account " + accId);
                     }
                 }
-
 
                 case 10 -> {
+
                     AuthorizationService.checkPermission(currentUser, Permission.VIEW_SYSTEM_STATS);
-                    currentAccount.applyInterest();
-                    System.out.println("Interest Applied. New Balance: " + currentAccount.getBalance());
+
+                    System.out.print("Enter Account ID: ");
+                    String accId = scanner.next();
+
+                    Account target = MockDatabase.getAccountById(accId);
+
+                    if (target == null) {
+                        System.out.println("Account not found.");
+                        return false;
+                    }
+
+                    target.applyInterest();
+                    System.out.println("Interest applied. New Balance: " + target.getBalance());
                 }
 
+                case 6 -> {
+                    // CUSTOMER
+                    if (currentUser.getRole() == Role.CUSTOMER) {
 
-                case 12 -> {
-                    System.out.println("\n--- Customer Support ---");
-                    System.out.println("1. Create Ticket (Customer) | 2. View Tickets (Admin)");
-                    int sup = scanner.nextInt();
-                    if (sup == 1) {
-                        System.out.print("Describe issue: ");
-                        scanner.nextLine();
-                        String issue = scanner.nextLine();
-                        MockDatabase.addTicket(new domain.entities.SupportTicket(currentUser.getCustomerId(), issue));
+                        System.out.println("\n--- Create Ticket ---");
+                            System.out.print("Describe issue: ");
+                            scanner.nextLine();
+                            String issue = scanner.nextLine();
+                            MockDatabase.addTicket(
+                                    new domain.entities.SupportTicket(
+                                            currentUser.getCustomerId(), issue
+                                    )
+                            );
+
+                        return false;
+                    }
+
+                    // ADMIN / MANAGER
+                    AuthorizationService.checkPermission(currentUser, Permission.MANAGE_USERS);
+                    System.out.println(" View Tickets");
+                    var tickets = MockDatabase.getAllTickets();
+                    if (tickets.isEmpty()) {
+                        System.out.println("No tickets.");
                     } else {
-                        AuthorizationService.checkPermission(currentUser, Permission.MANAGE_USERS);
-                        var tickets = MockDatabase.getAllTickets();
-                        if (tickets.isEmpty()) System.out.println("No tickets.");
-                        else tickets.forEach(System.out::println);
+                        tickets.forEach(System.out::println);
                     }
                 }
+
 
                 case 0 -> { return true; }
                 default -> System.out.println("Invalid option.");
@@ -537,4 +495,27 @@ public class Main {
     static boolean has(Permission p) {
         return AuthorizationService.hasPermission(currentUser, p);
     }
+
+    static AccountGroup selectFamilyGroup() {
+        if (currentUser.getFamilyGroups().isEmpty()) {
+            System.out.println("No Family Groups available.");
+            return null;
+        }
+
+        System.out.println("Select Family Group:");
+        for (int i = 0; i < currentUser.getFamilyGroups().size(); i++) {
+            System.out.println((i + 1) + ". " + currentUser.getFamilyGroups().get(i).getName());
+        }
+
+        int index = scanner.nextInt() - 1;
+        scanner.nextLine();
+
+        if (index < 0 || index >= currentUser.getFamilyGroups().size()) {
+            System.out.println("Invalid selection.");
+            return null;
+        }
+
+        return currentUser.getFamilyGroups().get(index);
+    }
+
 }
