@@ -38,6 +38,14 @@ public class MockDatabase {
 package domain.entities;
 
 
+import java.util.Collection;
+
+import domain.security.Role;
+
+
+import java.util.HashMap;
+import java.util.Map;
+
 import java.util.ArrayList;
 
 import domain.security.Role;
@@ -60,7 +68,7 @@ public class MockDatabase {
     static {
         customers.put("1", new Customer("1", "touka", "touka@example.com", "0911111111", "Damascus",Role.ADMIN));
 
-        customers.put("1", new Customer("1", "touka", "touka@example.com", "0911111111", "Damascus", Role.CUSTOMER));
+//        customers.put("1", new Customer("1", "touka", "touka@example.com", "0911111111", "Damascus", Role.CUSTOMER));
 
     }
 
@@ -87,6 +95,17 @@ public class MockDatabase {
     public static void addAccount(Account acc) {
         allAccounts.add(acc);
     }
+    public static Account getAccountById(String accountId) {
+        for (Customer c : customers.values()) {
+            for (Account a : c.getAccounts()) {
+                if (a.getAccountId().equals(accountId)) {
+                    return a;
+                }
+            }
+        }
+        return null;
+    }
+
 
     // 🔹 إرجاع كل الحسابات في النظام
     public static List<Account> getAllAccounts() {

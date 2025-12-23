@@ -28,8 +28,24 @@ public class SingleAccount extends AccountComponent {
 
     @Override
     public void display(int n) {
+
         System.out.println(" ".repeat(n)
                 + "- Account: " + account.getAccountId()
                 + " | Balance: $" + account.getBalance());
+
+//        System.out.println(" ".repeat(n) + account);
+    }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof SingleAccount)) return false;
+        SingleAccount other = (SingleAccount) obj;
+        return this.account.getAccountId().equals(other.account.getAccountId());
+    }
+
+    @Override
+    public int hashCode() {
+        return account.getAccountId().hashCode();
+
     }
 }
