@@ -194,6 +194,7 @@ public class Main {
         }
 
         if (has(Permission.MANAGE_USERS)) {
+            System.out.println("6. Customer Support (View Tickets)");
             System.out.println("9. Add Account Features");
         }
 
@@ -332,6 +333,9 @@ public class Main {
                         System.out.println(currentUser);
                         if (currentAccount != null) {
                             System.out.println(currentAccount);
+
+
+                            domain.service.RecommendationService.analyzeAndRecommend(currentAccount);
                         }
                     }
                     else System.out.println("No active account selected.");
