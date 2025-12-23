@@ -53,7 +53,7 @@ public class MockDatabase {
 
     static {
 
-        customers.put("1", new Customer("1", "touka", "touka@example.com", "0911111111", "Damascus", Role.CUSTOMER));
+        customers.put("1", new Customer("1", "touka", "touka@example.com", "0911111111", "Damascus", Role.ADMIN));
     }
 
 
@@ -75,5 +75,16 @@ public class MockDatabase {
     public static Collection<Customer> getAllCustomers() {
         return customers.values();
     }
+    public static Account getAccountById(String accountId) {
+        for (Customer c : customers.values()) {
+            for (Account a : c.getAccounts()) {
+                if (a.getAccountId().equals(accountId)) {
+                    return a;
+                }
+            }
+        }
+        return null;
+    }
+
 
 }

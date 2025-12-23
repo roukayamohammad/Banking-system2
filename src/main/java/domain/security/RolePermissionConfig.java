@@ -25,7 +25,7 @@ public class RolePermissionConfig {
 
         rolePermissions.put(Role.MANAGER, Set.of(
                 Permission.VIEW_OWN_ACCOUNT,
-                Permission.PROCESS_TRANSACTION,
+             //   Permission.PROCESS_TRANSACTION,
                 Permission.APPROVE_TRANSACTION,
                 Permission.VIEW_REPORTS,
                 Permission.VIEW_SYSTEM_STATS
@@ -34,7 +34,7 @@ public class RolePermissionConfig {
 
         rolePermissions.put(Role.ADMIN, Set.of(
                 Permission.VIEW_OWN_ACCOUNT,
-                Permission.PROCESS_TRANSACTION,
+
                 Permission.APPROVE_TRANSACTION,
                 Permission.VIEW_REPORTS,
                 Permission.VIEW_SYSTEM_STATS,

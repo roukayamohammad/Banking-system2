@@ -2,6 +2,8 @@ package domain.entities;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import domain.composite.AccountGroup;
 import domain.security.Role;
 
 public class Customer {
@@ -11,7 +13,7 @@ public class Customer {
     private String phone;
     private Role role;
     private String address;
-
+    private List<AccountGroup> familyGroups ;
     private List<Account> accounts;
 
     public Customer(String customerId, String name, String email, String phone, String address,Role role) {
@@ -21,9 +23,23 @@ public class Customer {
         this.phone = phone;
         this.address = address;
         this.role = role;
+        this.familyGroups = new ArrayList<>();
         this.accounts = new ArrayList<>();
     }
+    public List<AccountGroup> getFamilyGroups() {
+        return familyGroups;
+    }
 
+    public void addFamilyGroup(AccountGroup group) {
+        familyGroups.add(group);
+    }
+
+    public AccountGroup getFamilyGroupByName(String name) {
+        return familyGroups.stream()
+                .filter(g -> g.getName().equals(name))
+                .findFirst()
+                .orElse(null);
+    }
     public void addAccount(Account account) {
         accounts.add(account);
         System.out.println("Account " + account.getAccountId() + " added to customer " + name);
